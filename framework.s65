@@ -60,13 +60,16 @@ mode2_value .function left,right
 
                 ; http://6502.org/tutorials/65c02opcodes.html
 
-nop1 .macro
-                .byte $03       ; 1 cycle
-                .endm
-
 nops: .macro ncycles
-
 n:=\ncycles
+
+                .cerror n==1,"can't delay for just 1 cycle"
+
+                .if n%2==1
+                sta nops_tmp
+n:=n-3
+                .endif
+                
                 .rept n/12
                 jsr cycles_wait_12
 n:=n-12
@@ -74,18 +77,26 @@ n:=n-12
 
                 .rept n/2
                 nop
-n:=n-2
                 .next
-
-                .if n%2==1
-                .nop1
-                .endif
                 
                 .endm
 
 crtc_addr .function addr
                 .cerror (addr&7)!=0,"invalid CRTC addr"
                 .endf addr>>3
+
+samepage: .macro a,b
+                .cerror (\a&$ff00)!=(\b&$ff00),"page crossing :("
+                .endm
+
+bxxnp: .macro ins,dest
+                .samepage *+2,\dest
+                \ins \dest
+                .endm
+                
+bcsnp: .macro dest
+                .bxxnp bcs,\dest
+                .endm
                 
 ;-------------------------------------------------------------------------
 
@@ -109,16 +120,15 @@ FramePeriod = 312*64-2
 ;
 ; 40 is the vblank length (312-272);
 ;
-; 2 is the vblank period (the IRQ occurs on scanline 274)
+; 2 is the vblank period (the IRQ occurs on scanline 274);
 ;
-; 9 accounts for the time taken to load the timer value the first
-; time round;
+; 7 can probably go away, but I haven't sat down and done that;
 ;
 ; 2 is the latch load time (???).
 ;
-; (-2-9 puts the start of fx_init_function at the top left of the
+; (-2-7 puts the start of fx_init_function at the top left of the
 ; screen. Subtract more cycles to shift it further back.)
-TimerValue = 40*64 - 2*64 - 2 - 9 - draw_timer_adjustment
+TimerValue = 40*64 - 2*64 - 2 - 7 - draw_timer_adjustment
 
 ; 40 lines for vblank
 ; 32 lines for vsync (vertical position = 35 / 39)
@@ -139,7 +149,7 @@ zp_end:
 
                 .section zp
 vsync_counter: .fill 2		; counts up with each vsync
-; escape_pressed: .fill 1         ; set when Escape key pressed
+nops_tmp: .fill 1               ; may be overwritten by .nops macro
                 .send
 
 ;-------------------------------------------------------------------------
@@ -332,60 +342,57 @@ call_update:
                 bne -
 
 -
-                lda $fe44
-                .nop1           ;+1 1    1
-                cmp #12         ;+2 3    3
-                bcs -           ;+2 5 +3 6 
-                .nop1           ;+1 6
-                asl a           ;+2 8
-                tax             ;+2 10
-                jmp (dejitter_routines,x) ;+6 16/8
+                ldx $fe44
+                cpx #19                ;+2 2
+                .bcsnp -               ;+2 4
+                lda dejitter_offsets,x ;+4 8
+                sta dejitter_jmp+1     ;+4 12
+dejitter_jmp:
+                jmp dejitter_jmp&$ff00 ;+3 18
+                ;jsr = +6 24
 
-dejitter_4:
+case_18:
                 nop
-dejitter_3:
+case_17:
                 nop
-dejitter_2:
+case_16:
                 nop
-dejitter_1:
+case_15:
                 nop
-
-call_draw:
+case_14:
+                nop
+case_13:
+                nop
+case_12:
+                nop
+case_11:
+                nop
+case_10:
+                nop
+no_delay:
                 jsr fx_draw
-                
-                ; Loop as fast as possible
-
                 jmp main_loop
 
-                ; Get current module to return CRTC to known state
-
-; call_kill:
-;                 jsr fx_kill_function
-
-;                 ; Re-enable useful interupts
-
-;                 lda #$D3        ; A=11010011
-;                 sta $FE4E       ; R14=Interrupt Enable
-;                 cli
-
-;                 ; Exit gracefully (in theory)
-
-;                 rts
-
-dejitter_routines:
-                .word call_draw ;0
-                .word call_draw ;1
-                .word call_draw ;2
-                .word call_draw ;3
-                .word call_draw ;4
-                .word call_draw ;5
-                .word call_draw ;6
-                .word call_draw ;7
-                .word dejitter_1 ;8
-                .word dejitter_2 ;9
-                .word dejitter_3 ;10
-                .word dejitter_4 ;11
+dejitter: .macro dest
+                .samepage dejitter_jmp,\dest
+                .byte \dest&$ff
+                .endm
                 
+dejitter_offsets:
+                .rept 10
+                .dejitter no_delay
+                .next
+                .dejitter case_10
+                .dejitter case_11
+                .dejitter case_12
+                .dejitter case_13
+                .dejitter case_14
+                .dejitter case_15
+                .dejitter case_16
+                .dejitter case_17
+                .dejitter case_18
+                .samepage *,dejitter_offsets
+
                 .pend
                 
 ;-------------------------------------------------------------------------

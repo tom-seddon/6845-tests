@@ -1,4 +1,4 @@
-draw_timer_adjustment=0
+draw_timer_adjustment=3
 
 ;-------------------------------------------------------------------------
 
@@ -20,6 +20,30 @@ fx_init_1: .proc
                 jsr oswrch
                 lda #2
                 jsr oswrch
+
+                ; lda #23
+                ; jsr oswrch
+                
+                ; lda #224
+                ; jsr oswrch
+
+                ; lda #1
+                ; .rept 8
+                ; jsr oswrch
+                ; .next
+
+                ; lda #32
+                ; jsr oswrch
+
+                ; lda #17
+                ; jsr oswrch
+
+                ; lda #4
+                ; jsr oswrch
+                
+                ; lda #224
+                ; jsr oswrch
+                
                 rts
                 .pend
 
@@ -32,6 +56,8 @@ fx_init_2: .proc
 ;-------------------------------------------------------------------------
 
 fx_update: .proc
+                lda #mode2_palette(0,1)
+                sta video_palette
                 rts
                 .pend
 
@@ -39,16 +65,22 @@ fx_update: .proc
 
                 .align 256
 fx_draw: .proc
+                nop
                 lda #mode2_palette(0,4)
                 sta video_palette
 
-                lda #mode2_palette(0,1)
+                ; .nops 122
+
+                lda #mode2_palette(0,3)
                 sta video_palette
 
                 rts
                 .pend
                 
 ;-------------------------------------------------------------------------
-                
+
+                .align 16
+xtable: .fill 256,0
+
                 .send code
                 
