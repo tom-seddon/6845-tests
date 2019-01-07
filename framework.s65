@@ -69,6 +69,11 @@ n:=\ncycles
                 sta nops_tmp
 n:=n-3
                 .endif
+
+                .rept n/128
+                jsr cycles_wait_128
+n:=n-128
+                .next
                 
                 .rept n/12
                 jsr cycles_wait_12
@@ -85,19 +90,15 @@ crtc_addr .function addr
                 .cerror (addr&7)!=0,"invalid CRTC addr"
                 .endf addr>>3
 
-samepage: .macro a,b
-                .cerror (\a&$ff00)!=(\b&$ff00),"page crossing :("
+                ; 16 cycles
+crtc: .macro r,v
+                lda #\r
+                sta $fe00
+                lda #\v
+                sta $fe01
                 .endm
+                
 
-bxxnp: .macro ins,dest
-                .samepage *+2,\dest
-                \ins \dest
-                .endm
-                
-bcsnp: .macro dest
-                .bxxnp bcs,\dest
-                .endm
-                
 ;-------------------------------------------------------------------------
 
                 .weak
@@ -203,13 +204,17 @@ main: .proc
                 sei        ; disable interupts
                 lda #$7F   ; A=01111111
                 sta $FE4E  ; R14=Interrupt Enable (disable all interrupts)
-                sta $FE43 ; R3=Data Direction Register "A" (set keyboard data
-                ; direction)
+                sta $FE43 ; R3=Data Direction Register "A" (set
+                          ; keyboard data direction)
                 lda #$C2  ; A=11000010
-                sta $FE4E ; R14=Interrupt Enable (enable main_vsync and timer
-                ; interrupt)
-                ; cli       ; enable interupts
+                sta $FE4E ; R14=Interrupt Enable (enable main_vsync
+                          ; and timer interrupt)
 
+                ; http://www.retrosoftware.co.uk/wiki/index.php?title=Reading_the_keyboard_by_direct_hardware_access
+                lda #$0f
+                sta $fe42
+                lda #$03
+                sta $fe40
 
                 ; DEMO START - from here on out there are no interrupts enabled!!
 
@@ -341,10 +346,11 @@ call_update:
                 lda $fe45
                 bne -
 
+                .page
 -
                 ldx $fe44
                 cpx #19                ;+2 2
-                .bcsnp -               ;+2 4
+                bcs -                  ;+2 4
                 lda dejitter_offsets,x ;+4 8
                 sta dejitter_jmp+1     ;+4 12
 dejitter_jmp:
@@ -374,7 +380,6 @@ no_delay:
                 jmp main_loop
 
 dejitter: .macro dest
-                .samepage dejitter_jmp,\dest
                 .byte \dest&$ff
                 .endm
                 
@@ -391,7 +396,7 @@ dejitter_offsets:
                 .dejitter case_16
                 .dejitter case_17
                 .dejitter case_18
-                .samepage *,dejitter_offsets
+                .endp
 
                 .pend
                 
@@ -406,5 +411,24 @@ cycles_wait_128:	;	JSR to get here takes 6c
                 .next
 cycles_wait_12:
                 rts
+
+load_mode2_screen: .proc
+                lda #22
+                jsr oswrch
+
+                lda #2
+                jsr oswrch
+
+                ldx #<load_screen
+                ldy >#load_screen
+                jsr oscli
+
+                rts
+
+load_screen:
+                .text "LOAD $.SCREEN",13
+                .pend
+
+;-------------------------------------------------------------------------
 
                 .send code

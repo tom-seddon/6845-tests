@@ -16,8 +16,10 @@ build:
 	mkdir -p $(VOLUME)/0
 	mkdir -p $(TMP)
 	$(MAKE) assemble SRC=framework_test BBC=TEST
-	ssd_create -4 3 -o 6845-tests.ssd $(DEST)/@.* $(DEST)/$$.!BOOT
-#	-@$(MAKE) test_b2
+	$(MAKE) assemble SRC=r6 BBC=R6
+	$(MAKE) assemble SRC=r6-2 BBC=R6-2
+	ssd_create -4 3 -o 6845-tests.ssd $(DEST)/@.* $(DEST)/$$.!BOOT $(DEST)/$$.SCREEN $(DEST)/$$.MENU
+#	-@$(MAKE) test_b2 NAME=6845-tests
 
 ##########################################################################
 ##########################################################################
@@ -27,6 +29,7 @@ assemble:
 	mkdir -p $(DEST) $(TMP)
 	$(TASS) $(SRC).s65 -L$(TMP)/$(SRC).lst -l$(TMP)/$(SRC).sym -o$(TMP)/$(SRC).prg
 	python convert_prg.py $(TMP)/$(SRC).prg $(DEST)/@.$(BBC)
+	ssd_create -o 6845-test-$(BBC).ssd $(DEST)/@.$(BBC) $(DEST)/$$.SCREEN --build "*/@.$(BBC)"
 
 ##########################################################################
 ##########################################################################

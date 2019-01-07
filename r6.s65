@@ -1,4 +1,4 @@
-draw_timer_adjustment=3
+draw_timer_adjustment=0
 
 ;-------------------------------------------------------------------------
 
@@ -9,31 +9,13 @@ draw_timer_adjustment=3
                 .section zp
                 .send zp
 
-;-------------------------------------------------------------------------
-
                 .section code
 
 ;-------------------------------------------------------------------------
 
-                ; lda #98
-                ; sta $fe4f
-                ; lda $fe4f
-                ; asl a
-                ; ror space_flags
-                ; bit space_flags
-                ; bmi space_done
-                ; bvc space_done
-
 fx_init_1: .proc
                 jsr load_mode2_screen
-
-                lda #0
-                .for i=$3000,i<$3280,i+=8
-                sta i
-                .next
-
                 rts
-                
                 .pend
 
 ;-------------------------------------------------------------------------
@@ -47,28 +29,42 @@ fx_init_2: .proc
 fx_update: .proc
                 lda #mode2_palette(0,1)
                 sta video_palette
+                
+                lda #mode2_palette(7,7)
+                sta video_palette
+
+                ; Mode 2 defaults...
+                .crtc 6,32
+
                 rts
+                
                 .pend
 
 ;-------------------------------------------------------------------------
 
                 .align 256
 fx_draw: .proc
-                lda #mode2_palette(0,4)
+                .nops 3*128
+                
+                lda #mode2_palette(0,7)
                 sta video_palette
+                
+                .nops 40-16-6
 
-                ; .nops 122
+                .crtc 6,0
 
-                lda #mode2_palette(0,3)
-                sta video_palette
+                ; display now off...
+
+                .nops 3*128
+
+                .crtc 6,32
+
+                ; display no longer on...
 
                 rts
                 .pend
                 
 ;-------------------------------------------------------------------------
-
-                .align 16
-xtable: .fill 256,0
-
+                
                 .send code
                 
