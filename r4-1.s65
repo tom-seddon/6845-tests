@@ -1,0 +1,114 @@
+draw_timer_adjustment=0
+
+                .include "framework.s65"
+
+simple=false
+                
+frames_per_wait_offset_inc=10
+num_waits=15
+                
+                .section zp
+wait_offset_inc_counter: .fill 1
+wait_offset: .fill 1
+                .send zp
+
+                .section code
+
+fx_init_1: .proc
+                jsr load_mode2_screen
+                rts
+                .pend
+
+fx_init_2: .proc
+                lda #0
+                sta wait_offset
+                sta wait_offset_inc_counter
+                rts
+                .pend
+
+fx_update: .proc
+                lda #mode2_palette(0,0)
+                sta video_palette
+
+                lda #mode2_palette(7,7)
+                sta video_palette
+
+                inc wait_offset_inc_counter
+                lda wait_offset_inc_counter
+                cmp #frames_per_wait_offset_inc
+                bcc wait_offset_done
+
+                lda #0
+                sta wait_offset_inc_counter
+                
+                clc
+                lda wait_offset
+                adc #3
+                cmp #(num_waits-1)*3
+                bcc +
+                lda #0
++
+                sta wait_offset
+
+wait_offset_done:
+                
+                rts
+                .pend
+
+                .align 256
+wait_routines:
+                .rept num_waits-1
+                jsr wait_1_scanline
+                .next
+wait_1_scanline:
+                .nops 128-12
+                rts
+
+                .align 256
+fx_draw: .proc
+
+                .if simple
+
+                .set_palette 0,2
+
+                jsr wait_1_scanline
+                jsr wait_1_scanline
+                jsr wait_1_scanline
+
+                .set_palette 0,4
+
+                .else
+
+                jsr wait_1_scanline
+                jsr wait_1_scanline
+                jsr wait_1_scanline
+                jsr wait_1_scanline
+                
+                .set_palette 0,2
+                .crtc 4,0
+                
+                jsr wait_1_scanline
+                jsr wait_1_scanline
+
+                ; HD6845...
+                ;
+                ; 90 = 10/10 colour
+                ; 91 = 10/10 colour
+                ; 92 = 5/10 colour
+                ; 93 = 5/10 colour
+                ; 94+ = strange
+                
+                ; jsr wait_1_scanline
+                .nops 94
+                
+                ; jsr wait_1_scanline
+                
+                .crtc 4,38
+                .set_palette 0,1
+
+                .endif
+                
+                rts
+                .pend
+
+                .send code

@@ -1,0 +1,122 @@
+draw_timer_adjustment=0
+
+;-------------------------------------------------------------------------
+
+                .include "framework.s65"
+                
+;-------------------------------------------------------------------------
+
+                .section zp
+index: .fill 1
+scanline: .fill 2
+palette: .fill 1
+                .send zp
+
+;-------------------------------------------------------------------------
+
+                .section code
+
+;-------------------------------------------------------------------------
+
+fx_init_1: .proc
+                jsr load_mode2_screen
+
+                ; lda #12
+                ; jsr oswrch
+
+                rts
+                .pend
+
+;-------------------------------------------------------------------------
+
+fx_init_2: .proc
+                lda #$82
+                sta $fe4e
+                
+                rts
+                .pend
+
+;-------------------------------------------------------------------------
+
+fx_update: .proc
+                ldx index
+
+                lda scanline+0
+                sta scanlines,x
+
+                inx
+
+                lda scanline+1
+                sta scanlines,x
+
+                inx
+
+                stx index
+
+                lda #mode2_palette(0,0)
+                sta palette
+
+                ; (redundant, except for the first time round.)
+-
+                lda $fe4d
+                and #$02
+                beq -
+
+                lda #$02        ;CA1, vsync
+                sta $fe4d       ;acknowledge
+
+                lda #0
+                sta scanline+0
+                sta scanline+1
+
+                ldy #0
+
+                rts
+                
+                .pend
+
+;-------------------------------------------------------------------------
+
+                .align 256
+fx_draw: .proc
+loop:
+                ldx $fe4d       ;+6 36
+
+                lda palette
+                sta video_palette
+                eor #mode2_palette(0,1)^mode2_palette(0,0)
+                sta palette
+                ; +12
+
+                clc
+
+                lda scanline+0
+                adc #1
+                sta scanline+0
+
+                lda scanline+1
+                adc #0
+                sta scanline+1
+                ; +18
+
+                .nops 121-36
+
+                ; ...121
+                txa             ;+2 123
+                and #2          ;+2 125
+                beq loop        ;+3 128
+
+                ; iny
+                ; bne loop
+
+                rts
+                .pend
+                
+;-------------------------------------------------------------------------
+
+                .align 256
+scanlines:
+                .fill 256,255
+                
+                .send code
+                

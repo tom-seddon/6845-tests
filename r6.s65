@@ -9,12 +9,15 @@ draw_timer_adjustment=0
                 .section zp
                 .send zp
 
+;-------------------------------------------------------------------------
+
                 .section code
 
 ;-------------------------------------------------------------------------
 
 fx_init_1: .proc
                 jsr load_mode2_screen
+
                 rts
                 .pend
 
@@ -33,9 +36,6 @@ fx_update: .proc
                 lda #mode2_palette(7,7)
                 sta video_palette
 
-                ; Mode 2 defaults...
-                .crtc 6,32
-
                 rts
                 
                 .pend
@@ -44,22 +44,18 @@ fx_update: .proc
 
                 .align 256
 fx_draw: .proc
-                .nops 3*128
+                ; Wait for row 1.
+                .nops 18*128
                 
-                lda #mode2_palette(0,7)
+                lda #mode2_palette(0,4)
                 sta video_palette
-                
-                .nops 40-16-6
 
-                .crtc 6,0
+                ; The row counter compares equal, and the display is
+                ; immediately shortened.
+                .crtc 6,2
 
-                ; display now off...
-
-                .nops 3*128
-
-                .crtc 6,32
-
-                ; display no longer on...
+                ; The CRTC is now in some kind of end of frame state.
+                .crtc 6,8
 
                 rts
                 .pend

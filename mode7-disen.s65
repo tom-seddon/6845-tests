@@ -1,0 +1,99 @@
+draw_timer_adjustment=0
+
+;-------------------------------------------------------------------------
+
+                .include "framework.s65"
+                
+;-------------------------------------------------------------------------
+
+                .section zp
+                .send zp
+
+;-------------------------------------------------------------------------
+
+                .section code
+
+;-------------------------------------------------------------------------
+
+fx_init_1: .proc
+                lda #22
+                jsr oswrch
+
+                lda #7
+                jsr oswrch
+
+                ; Non-interlaced Mode 7 looks weird, but the timing is
+                ; at least the same as the other modes.
+                .crtc 8,$90
+                .crtc 9,9
+                .crtc 5,2       ;31*10+2=312
+                .crtc 4,30
+                .crtc 7,27
+                .crtc 3,$44
+
+                ; Give things a chance to settle down.
+                lda #19
+                jsr osbyte
+
+                lda #19
+                jsr osbyte
+                
+
+                ldx #0
+                lda #66
+-
+                sta $7c00,x
+                sta $7d00,x
+                sta $7e00,x
+                sta $7f00,x
+                inx
+                bne -
+
+                rts
+                .pend
+
+;-------------------------------------------------------------------------
+
+fx_init_2: .proc
+                rts
+                .pend
+
+;-------------------------------------------------------------------------
+
+fx_update: .proc
+                rts
+                .pend
+
+;-------------------------------------------------------------------------
+
+                .align 256
+fx_draw: .proc
+                ldy #250
+loop:
+                ; .nops 123
+                ; dey
+                ; bne loop
+                
+                lda #8
+                sta $fe00
+                lda #$30
+                sta $fe01
+                ; +16
+
+                lda #$10
+                sta $fe01
+                ; +8
+
+                .nops 123-(16+8)
+
+                ; ...123
+                dey             ;+2 125
+                bne loop        ;+3 128
+                
+                rts
+                .pend
+                
+;-------------------------------------------------------------------------
+
+                .send code
+                

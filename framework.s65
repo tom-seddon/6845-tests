@@ -45,18 +45,18 @@ oscli=$fff7
 
 ;-------------------------------------------------------------------------
 
-mode2_palette .function index,physical
-                .endf (index<<4)|(physical^7)
+mode2_palette .function mode2_palette_index,mode2_palette_physical
+                .endf (mode2_palette_index<<4)|(mode2_palette_physical^7)
 
                 ; this produces the left value
-mode2_left .function index
-                .endf ((index&8)<<4)|((index&4)<<3)|((index&2)<<2)|((index&1)<<1)
+mode2_left .function mode2_left_index
+                .endf ((mode2_left_index&8)<<4)|((mode2_left_index&4)<<3)|((mode2_left_index&2)<<2)|((mode2_left_index&1)<<1)
 
-mode2_right .function index
-                .endf mode2_left(index)>>1
+mode2_right .function mode2_right_index
+                .endf mode2_left(mode2_right_index)>>1
 
-mode2_value .function left,right
-                .endf mode2_left(left)|mode2_right(right)
+mode2_value .function mode2_value_left,mode2_value_right
+                .endf mode2_left(mode2_value_left)|mode2_right(mode2_value_right)
 
                 ; http://6502.org/tutorials/65c02opcodes.html
 
@@ -91,11 +91,18 @@ crtc_addr .function addr
                 .endf addr>>3
 
                 ; 16 cycles
+                ; TODO - should be set_crtc
 crtc: .macro r,v
                 lda #\r
                 sta $fe00
                 lda #\v
                 sta $fe01
+                .endm
+
+                ; 6 cycles
+set_palette: .macro index,colour
+                lda #mode2_palette(\index,\colour)
+                sta $fe21
                 .endm
                 
 
@@ -176,27 +183,17 @@ main: .proc
                 cpx #zp_end
                 bne -
 
+                lda #144        ;*TV
+                ldx #255        ;R7+1 adjustment
+                ldy #1          ;interlace off
+                jsr osbyte
+
                 ; Initialise system modules here!
                 ; Load SIDEWAYS RAM modules here!
                 jsr fx_init_1
 
-                ; Turn off interlace
-                lda #8
-                sta $fe00
-                lda #0
-                sta $fe01
-
                 ; Turn off cursor
-                lda #10
-                sta $FE00
-                lda #32
-                sta $FE01
-
-                ; Reset *TV effect
-                lda #5
-                sta $fe00
-                lda #0
-                sta $fe01
+                .crtc 10,32
 
                 lda #19
                 jsr osbyte

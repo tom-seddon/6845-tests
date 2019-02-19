@@ -16,54 +16,71 @@ draw_timer_adjustment=0
 ;-------------------------------------------------------------------------
 
 fx_init_1: .proc
-                jsr load_mode2_screen
+                lda #22
+                jsr oswrch
 
-                ; lda #12
-                ; jsr oswrch
+                lda #5
+                jsr oswrch
+
+                ldx #<load_screen2
+                ldy #>load_screen2
+                jsr oscli
 
                 rts
+
+load_screen2:
+                .text "LOAD $.SCREEN2",13
                 .pend
 
 ;-------------------------------------------------------------------------
 
 fx_init_2: .proc
+;                .crtc 7,0
+                .crtc 12,6
+                .crtc 13,0
+                .crtc 8,0
+                .crtc 6,255
+                .crtc 5,0
+                
+                lda #$82
+                sta $fe4e
+
+loop:
+                lda #2
+-
+                bit $fe4d
+                beq -
+                sta $fe4d
+
+                .nops 64*128
+
+                lda #mode2_palette(0,1)
+                sta video_palette
+
+                .nops 128
+
+                lda #mode2_palette(0,0)
+                sta video_palette
+
+                jmp loop
+                
                 rts
                 .pend
 
 ;-------------------------------------------------------------------------
 
 fx_update: .proc
-                lda #mode2_palette(0,1)
-                sta video_palette
-                
-                lda #mode2_palette(7,7)
-                sta video_palette
-
-                rts
-                
+                jmp ($fffc)
                 .pend
 
 ;-------------------------------------------------------------------------
 
                 .align 256
 fx_draw: .proc
-                .crtc 6,8
-                
-                ; Wait for row 1.
-                .nops 18*128
-                
-                lda #mode2_palette(0,4)
-                sta video_palette
-
-                ; The row counter doesn't compare equal, so the
-                ; visible display continues, even past the usual 32
-                ; limit, until it reaches the vertical total.
-                .crtc 6,1
-
-                rts
+                jmp ($fffc)
                 .pend
                 
 ;-------------------------------------------------------------------------
-                
+
                 .send code
                 
