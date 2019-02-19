@@ -52,10 +52,10 @@ fx_draw: .proc
 
                 ; The row counter compares equal, and the display is
                 ; immediately shortened.
-                .crtc 6,2
+                .set_crtc 6,2
 
                 ; The CRTC is now in some kind of end of frame state.
-                .crtc 6,8
+                .set_crtc 6,8
 
                 rts
                 .pend

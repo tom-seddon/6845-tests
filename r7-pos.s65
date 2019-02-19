@@ -35,12 +35,12 @@ load_screen2:
 ;-------------------------------------------------------------------------
 
 fx_init_2: .proc
-;                .crtc 7,0
-                .crtc 12,6
-                .crtc 13,0
-                .crtc 8,0
-                .crtc 6,255
-                .crtc 5,0
+;                .set_crtc 7,0
+                .set_crtc 12,6
+                .set_crtc 13,0
+                .set_crtc 8,0
+                .set_crtc 6,255
+                .set_crtc 5,0
                 
                 lda #$82
                 sta $fe4e

@@ -24,12 +24,12 @@ fx_init_1: .proc
 
                 ; Non-interlaced Mode 7 looks weird, but the timing is
                 ; at least the same as the other modes.
-                .crtc 8,$90
-                .crtc 9,9
-                .crtc 5,2       ;31*10+2=312
-                .crtc 4,30
-                .crtc 7,27
-                .crtc 3,$44
+                .set_crtc 8,$90
+                .set_crtc 9,9
+                .set_crtc 5,2       ;31*10+2=312
+                .set_crtc 4,30
+                .set_crtc 7,27
+                .set_crtc 3,$44
 
                 ; Give things a chance to settle down.
                 lda #19

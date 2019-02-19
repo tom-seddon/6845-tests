@@ -92,7 +92,7 @@ crtc_addr .function addr
 
                 ; 16 cycles
                 ; TODO - should be set_crtc
-crtc: .macro r,v
+set_crtc: .macro r,v
                 lda #\r
                 sta $fe00
                 lda #\v
@@ -193,7 +193,7 @@ main: .proc
                 jsr fx_init_1
 
                 ; Turn off cursor
-                .crtc 10,32
+                .set_crtc 10,32
 
                 lda #19
                 jsr osbyte

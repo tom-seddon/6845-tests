@@ -47,7 +47,7 @@ fx_update: .proc
 
                 .align 256
 fx_draw: .proc
-                .crtc 6,8
+                .set_crtc 6,8
                 
                 ; Wait for row 1.
                 .nops 18*128
@@ -58,7 +58,7 @@ fx_draw: .proc
                 ; The row counter doesn't compare equal, so the
                 ; visible display continues, even past the usual 32
                 ; limit, until it reaches the vertical total.
-                .crtc 6,1
+                .set_crtc 6,1
 
                 rts
                 .pend

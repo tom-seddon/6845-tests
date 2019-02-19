@@ -85,7 +85,7 @@ fx_draw: .proc
                 jsr wait_1_scanline
                 
                 .set_palette 0,2
-                .crtc 4,0
+                .set_crtc 4,0
                 
                 jsr wait_1_scanline
                 jsr wait_1_scanline
@@ -103,7 +103,7 @@ fx_draw: .proc
                 
                 ; jsr wait_1_scanline
                 
-                .crtc 4,38
+                .set_crtc 4,38
                 .set_palette 0,1
 
                 .endif
