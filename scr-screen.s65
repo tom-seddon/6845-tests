@@ -1,0 +1,255 @@
+draw_timer_adjustment=64
+
+                .include "framework.s65"
+
+;-------------------------------------------------------------------------
+
+                .section zp
+base: .fill 1
+ptr: .fill 2
+                .send zp
+
+                .section code
+
+fx_init_1: .proc
+
+                ; cheekily fill in $3000...$57ff with blue...
+                lda #22
+                jsr oswrch
+                lda #1
+                jsr oswrch
+
+                lda #17
+                jsr oswrch
+                lda #130
+                jsr oswrch
+
+                lda #12
+                jsr oswrch
+                
+                lda #22
+                jsr oswrch
+                lda #5
+                jsr oswrch
+
+                lda #17
+                jsr oswrch
+                lda #129
+                jsr oswrch
+
+                lda #12
+                jsr oswrch
+
+                .set_crtc 12,$0c
+                .set_crtc 13,$00
+                .set_crtc 6,25
+                ; .set_crtc 7,31
+
+                ldx #<load_scr_hud
+                ldy #>load_scr_hud
+                jsr oscli
+
+                ldx #2
+                ldy #4
+                jsr vdu19
+
+                ldx #3
+                ldy #3
+                jsr vdu19
+
+                ldx #$00
+                ldy #$60
+                jsr fill_rows
+
+                ldx #$38
+                ldy #$61
+                jsr fill_rows
+
+                jsr show_rows
+
+                rts
+
+vdu19:
+                lda #19
+                jsr oswrch
+
+                txa
+                jsr oswrch
+
+                tya
+                jsr oswrch
+
+                lda #0
+                jsr oswrch
+                jsr oswrch
+                jmp oswrch
+
+load_scr_hud:
+                .text "LOAD SCR-HUD FFFF6000",13
+                .pend
+
+show_rows: .proc
+                lda #$00
+                sta ptr+0
+                lda #$58
+                sta ptr+1
+loop:
+                ldy #7
+                lda (ptr),y
+                cmp #$ff
+                lda #$00
+                bcs +
+                lda #$ff
++
+                sta (ptr),y
+
+                clc
+                lda ptr+0
+                adc #8
+                sta ptr+0
+                lda ptr+1
+                adc #0
+                sta ptr+1
+                bpl loop
+                rts
+                .pend
+                
+fill_rows: .proc
+                stx sta_dest+1
+                sty sta_dest+2
+                lda #8
+                sta row_counter
+                lda #0
+                sta colour_index
+one_row:
+                ldx colour_index
+                lda colours,x
+                ldx #7
+one_byte:
+sta_dest:
+                sta $ffff,x
+                dex
+                bpl one_byte
+
+                clc
+                lda sta_dest+1
+                adc #$40
+                sta sta_dest+1
+                lda sta_dest+2
+                adc #$01
+                sta sta_dest+2
+
+                ldx colour_index
+                inx
+                cpx #3
+                bne +
+                ldx #0
++
+                stx colour_index
+
+                dec row_counter
+                bne one_row
+
+                rts
+                
+row_counter:
+                .byte 0
+
+colour_index:
+                .byte 0
+                
+colours:
+                .byte $0f,$f0,$ff
+                .pend
+
+cycles_wait_1024:
+                jsr cycles_wait_512
+cycles_wait_512:
+                jsr cycles_wait_256
+cycles_wait_256:
+                jsr cycles_wait_128
+                jmp cycles_wait_128
+                
+;-------------------------------------------------------------------------
+
+fx_init_2: .proc
+                lda #$0c
+                sta base
+                rts
+                .pend
+
+;-------------------------------------------------------------------------
+
+wait_roughly_x_scanlines: .proc
+loop:
+                .nops 128-5
+                dex
+                bne loop
+                rts
+                .pend
+                
+fx_update: .proc
+                ; .set_crtc 12,$0c
+                ; .set_crtc 13,$00
+
+                lda base
+                eor #($c^$6)
+                sta base
+
+                ; prepare for start of next screen
+                .set_crtc 13,$00
+                .set_crtc 12,$0c
+                
+                rts
+                .pend
+
+fx_draw: .proc
+                ; set up screen for game part
+
+                .set_crtc 4,0   ;16
+
+                .if true
+                .set_crtc 13,$28 ;32
+                lda #12
+                sta $fe00
+                lda base
+                sta $fe01       ;48
+                .else
+                .nops 32        ;48
+                .endif
+                
+                .set_crtc 7,$ff ;64
+                .set_crtc 6,$ff ;80
+                
+                .nops 128-80
+
+                ; jsr cycles_wait_128
+                ; jsr cycles_wait_128
+                ; jsr cycles_wait_128
+                ; jsr cycles_wait_128
+
+                ; jsr cycles_wait_128
+                ; jsr cycles_wait_128
+                ; jsr cycles_wait_128
+                ; jsr cycles_wait_128
+
+; nreps=1
+                ; .rept nreps
+                ; jsr cycles_wait_1024
+                ; .next
+
+                ; now in game part
+                .set_crtc 4,37
+                .set_crtc 7,32
+                .set_crtc 6,24
+
+                ldx #200
+                jsr wait_roughly_x_scanlines
+                
+                rts
+                .pend
+
+;-------------------------------------------------------------------------
+
+                .send code
+                

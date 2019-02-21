@@ -2,22 +2,50 @@ draw_timer_adjustment=0
 
                 .include "framework.s65"
 
+;-------------------------------------------------------------------------
+
+; if true, just do one palette change at start of frame.
 simple=false
                 
 frames_per_wait_offset_inc=10
 num_waits=15
-                
+
+;-------------------------------------------------------------------------
+
                 .section zp
 wait_offset_inc_counter: .fill 1
 wait_offset: .fill 1
+key_state: .fill 1
+routine_index: .fill 1
                 .send zp
+
+;-------------------------------------------------------------------------
 
                 .section code
 
+;-------------------------------------------------------------------------
+
 fx_init_1: .proc
                 jsr load_mode2_screen
+
+                ldx #0
+                lda #0
+loop:
+                txa
+                and #7
+                cmp #2
+                bcc next
+                lda #0
+                sta $3000,x
+next:
+                inx
+                cpx #128
+                bne loop
+                
                 rts
                 .pend
+
+;-------------------------------------------------------------------------
 
 fx_init_2: .proc
                 lda #0
@@ -26,12 +54,14 @@ fx_init_2: .proc
                 rts
                 .pend
 
-fx_update: .proc
-                lda #mode2_palette(0,0)
-                sta video_palette
+;-------------------------------------------------------------------------
 
-                lda #mode2_palette(7,7)
-                sta video_palette
+fx_update: .proc
+                .set_palette 0,0
+                .set_palette 7,7
+
+                ; might as well do this here...
+                .set_crtc 13,$00
 
                 inc wait_offset_inc_counter
                 lda wait_offset_inc_counter
@@ -51,9 +81,65 @@ fx_update: .proc
                 sta wait_offset
 
 wait_offset_done:
+
+                .nops 4
+
+                lda #key_space
+                sta $fe4f
+                lda $fe4f
+                asl a            ;C=1 if pressed
+
+; toggle state: %00xxxxxx - not pressed
+;               %01xxxxxx - newly released
+;               %10xxxxxx - newly pressed
+;               %11xxxxxx - held
+                
+                ror key_state
+                bit key_state
+                bpl key_done
+                bvs key_done
+
+key_pressed:
+                inc routine_index
+                lda routine_index
+                cmp #len(fx_draw_routines)
+                bne key_done
+                lda #0
+                sta routine_index
+key_done:
+
+                ldx routine_index
+                lda fx_draw_routine_lsbs,x
+                sta main.call_draw+1
+                lda fx_draw_routine_msbs,x
+                sta main.call_draw+2
+
+                ; lame, but straightforward...
+                ldy #31
+draw_colour_loop:
+                lda fx_draw_routine_colours,x
+                sta $3000+19*32+2*320,y
+                dey
+                bpl draw_colour_loop
                 
                 rts
                 .pend
+
+;-------------------------------------------------------------------------
+
+; each routine is (routine,colour)
+fx_draw_routines=[(fx_draw_6,1),(fx_draw_7,2),(fx_draw_simple,3)]
+                
+fx_draw_routine_lsbs:
+                .byte <fx_draw_routines[:,0]
+fx_draw_routine_msbs:
+                .byte >fx_draw_routines[:,0]
+fx_draw_routine_colours:
+                .for colour in fx_draw_routines[:,1]
+                .byte mode2_value(colour,colour)
+                .next
+
+;-------------------------------------------------------------------------
 
                 .align 256
 wait_routines:
@@ -64,51 +150,67 @@ wait_1_scanline:
                 .nops 128-12
                 rts
 
+;-------------------------------------------------------------------------
+
+; dummy - replaced
+fx_draw:
+                rts
+                
+;-------------------------------------------------------------------------
+
                 .align 256
-fx_draw: .proc
-
-                .if simple
-
+fx_draw_simple: .proc
                 .set_palette 0,2
-
                 jsr wait_1_scanline
                 jsr wait_1_scanline
                 jsr wait_1_scanline
-
                 .set_palette 0,4
 
-                .else
-
-                jsr wait_1_scanline
-                jsr wait_1_scanline
-                jsr wait_1_scanline
-                jsr wait_1_scanline
-                
-                .set_palette 0,2
-                .set_crtc 4,0
-                
-                jsr wait_1_scanline
-                jsr wait_1_scanline
-
-                ; HD6845...
-                ;
-                ; 90 = 10/10 colour
-                ; 91 = 10/10 colour
-                ; 92 = 5/10 colour
-                ; 93 = 5/10 colour
-                ; 94+ = strange
-                
-                ; jsr wait_1_scanline
-                .nops 94
-                
-                ; jsr wait_1_scanline
-                
                 .set_crtc 4,38
-                .set_palette 0,1
-
-                .endif
-                
+                .set_crtc 6,33
+                .set_crtc 7,34  ; though not important for timing...
                 rts
                 .pend
 
+;-------------------------------------------------------------------------
+
+make_fx_draw .macro num_initial_scanlines
+
+                .rept \num_initial_scanlines
+                jsr wait_1_scanline
+                .next
+
+nnops:=0
+                .nops nnops
+                
+                .set_palette 0,2 ;+6 6
+                .set_crtc 4,0    ;+16 22
+                .set_crtc 12,$06 ;+16 38
+                .set_palette 0,4 ;+6 44
+nnops:=nnops+44
+
+                .cerror nnops>128,"oops"
+                .nops 128-nnops
+
+                ; start of row 1 scanline 0
+                .set_palette 0,1
+                .set_crtc 4,37   ;+16 16
+                .set_crtc 6,31   ;+16 32
+                .set_crtc 7,33   ;+16 48
+                .set_palette 0,2 ;+6  54
+
+                rts
+                .endm
+
+                .align 256
+fx_draw_6:
+                make_fx_draw 6
+
+                .align 256
+fx_draw_7:
+                make_fx_draw 7
+
+;-------------------------------------------------------------------------
+
                 .send code
+

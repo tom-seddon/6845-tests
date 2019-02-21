@@ -1,3 +1,4 @@
 * -text
 $.MKSCREEN diff=bbcbasic
 $.MKSCREEN2 diff=bbcbasic
+$.MKHUD diff=bbcbasic
