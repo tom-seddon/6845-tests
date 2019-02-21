@@ -57,8 +57,8 @@ fx_init_2: .proc
 ;-------------------------------------------------------------------------
 
 fx_update: .proc
-                .set_palette 0,0
-                .set_palette 7,7
+                .set_mode2_palette 0,0
+                .set_mode2_palette 7,7
 
                 ; might as well do this here...
                 .set_crtc 13,$00
@@ -160,11 +160,11 @@ fx_draw:
 
                 .align 256
 fx_draw_simple: .proc
-                .set_palette 0,2
+                .set_mode2_palette 0,2
                 jsr wait_1_scanline
                 jsr wait_1_scanline
                 jsr wait_1_scanline
-                .set_palette 0,4
+                .set_mode2_palette 0,4
 
                 .set_crtc 4,38
                 .set_crtc 6,33
@@ -183,21 +183,21 @@ make_fx_draw .macro num_initial_scanlines
 nnops:=0
                 .nops nnops
                 
-                .set_palette 0,2 ;+6 6
+                .set_mode2_palette 0,2 ;+6 6
                 .set_crtc 4,0    ;+16 22
                 .set_crtc 12,$06 ;+16 38
-                .set_palette 0,4 ;+6 44
+                .set_mode2_palette 0,4 ;+6 44
 nnops:=nnops+44
 
                 .cerror nnops>128,"oops"
                 .nops 128-nnops
 
                 ; start of row 1 scanline 0
-                .set_palette 0,1
+                .set_mode2_palette 0,1
                 .set_crtc 4,37   ;+16 16
                 .set_crtc 6,31   ;+16 32
                 .set_crtc 7,33   ;+16 48
-                .set_palette 0,2 ;+6  54
+                .set_mode2_palette 0,2 ;+6  54
 
                 rts
                 .endm

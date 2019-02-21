@@ -25,6 +25,8 @@ build:
 	$(MAKE) assemble SRC=mode7-disen BBC=M7DISEN
 	$(MAKE) assemble SRC=r4-1 BBC=R4-1
 	$(MAKE) assemble SRC=scr-screen BBC=SCR-SCR
+	$(MAKE) assemble SRC=r4-2 BBC=R4-2
+	$(MAKE) assemble SRC=r4-3 BBC=R4-3
 	ssd_create -4 3 -o $(SSD)/6845-tests.ssd $(DEST)/@.* $(DEST)/$$.!BOOT $(DEST)/$$.SCREEN $(DEST)/$$.SCREEN2 $(DEST)/$$.SCR-HUD $(DEST)/$$.MENU
 #	-@$(MAKE) test_b2 NAME=6845-tests
 

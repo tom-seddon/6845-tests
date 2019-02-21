@@ -177,7 +177,7 @@ set_crtc: .macro r,v
                 .endm
 
                 ; 6 cycles
-set_palette: .macro index,colour
+set_mode2_palette: .macro index,colour
                 lda #mode2_palette(\index,\colour)
                 sta $fe21
                 .endm
@@ -479,11 +479,15 @@ dejitter_offsets:
 ; 	HELPER FUNCTIONS
 ;-------------------------------------------------------------------------
 
-                
+
+cycles_wait_1024:
+                jsr cycles_wait_512
+cycles_wait_512:
+                jsr cycles_wait_256
+cycles_wait_256:
+                jsr cycles_wait_128
 cycles_wait_128:                ; JSR to get here takes 6c
-                .rept 58
-                nop
-                .next
+                .nops 116
 cycles_wait_12:
                 rts
 

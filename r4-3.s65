@@ -1,0 +1,54 @@
+draw_timer_adjustment=0
+
+                .include "framework.s65"
+
+;-------------------------------------------------------------------------
+
+                .section zp
+                .send zp
+
+;-------------------------------------------------------------------------
+
+                .section code
+
+;-------------------------------------------------------------------------
+
+fx_init_1: .proc
+                jsr load_mode2_screen
+                rts
+                .pend
+
+;-------------------------------------------------------------------------
+
+fx_init_2: .proc
+                rts
+                .pend
+
+;-------------------------------------------------------------------------
+
+fx_update: .proc
+                .set_crtc 6,30
+                .set_crtc 7,33
+                rts
+                .pend
+
+;-------------------------------------------------------------------------
+
+fx_draw: .proc
+                .set_crtc 4,1
+                jsr cycles_wait_1024
+                jsr cycles_wait_128
+                
+                ; VL6845 - a new frame starts immediately, as this is
+                ; the last row - display is 313 lines
+                ;
+                ; HD6845 - new frame doesn't start until next
+                ; character row, and my TV won't sync to the display
+                ; properly
+                .set_crtc 4,37
+                rts
+                .pend
+
+;-------------------------------------------------------------------------
+
+                .send code

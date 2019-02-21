@@ -81,16 +81,6 @@ load_scr_hud:
 
 ;-------------------------------------------------------------------------
 
-cycles_wait_1024:
-                jsr cycles_wait_512
-cycles_wait_512:
-                jsr cycles_wait_256
-cycles_wait_256:
-                jsr cycles_wait_128
-                jmp cycles_wait_128
-                
-;-------------------------------------------------------------------------
-
 fx_init_2: .proc
                 lda #<crtc_addr(main_addr_0)
                 sta main_crtc_addr+0
@@ -173,9 +163,6 @@ fx_draw: .proc
                 jsr cycles_wait_1024
                 jsr cycles_wait_1024
                 jsr cycles_wait_128
-                jsr cycles_wait_128
-                jsr cycles_wait_128
-                jsr cycles_wait_128
                 .nops 60
 
                 ; 18/18 rows of game part, and prepare address for
@@ -201,7 +188,7 @@ fx_draw: .proc
                 lda #$07
                 sta $fe21
 
-                ldx #132
+                ldx #134
                 jsr wait_roughly_x_scanlines
 
                 lda #$03
