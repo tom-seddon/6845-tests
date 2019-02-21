@@ -125,24 +125,26 @@ fx_update: .proc
                 and #31
                 bne +
 
-                ; lda main_crtc_addr+0
-                ; eor #(<crtc_addr(main_addr_0))^(<crtc_addr(main_addr_1))
-                ; sta main_crtc_addr+0
+                lda main_crtc_addr+0
+                eor #(<crtc_addr(main_addr_0))^(<crtc_addr(main_addr_1))
+                sta main_crtc_addr+0
 
-                ; lda main_crtc_addr+1
-                ; eor #(>crtc_addr(main_addr_0))^(>crtc_addr(main_addr_1))
-                ; sta main_crtc_addr+1
+                lda main_crtc_addr+1
+                eor #(>crtc_addr(main_addr_0))^(>crtc_addr(main_addr_1))
+                sta main_crtc_addr+1
 
 +                
                 ; prepare for start of next screen
                 .set_crtc 13,<crtc_addr(top_addr)
                 .set_crtc 12,>crtc_addr(top_addr)
                 
-                .set_crtc 7,32
-                .set_crtc 6,24
+                .set_crtc 7,$ff
+                .set_crtc 6,$ff
                 
                 rts
                 .pend
+
+third_split=true
 
 fx_draw: .proc
                 ; 2/2 rows of HUD part, and prepare address for game
@@ -171,31 +173,67 @@ fx_draw: .proc
                 jsr cycles_wait_1024
                 jsr cycles_wait_1024
                 jsr cycles_wait_128
+                jsr cycles_wait_128
+                jsr cycles_wait_128
+                jsr cycles_wait_128
                 .nops 60
 
                 ; 18/18 rows of game part, and prepare address for
                 ; dashboard part
                 lda #$02
                 sta $fe21
-                
-                .set_crtc 4,36
+
+                .if third_split
+
+                .set_crtc 4,16
 
                 .set_crtc 12,>crtc_addr(dashboard_addr)
                 .set_crtc 13,<crtc_addr(dashboard_addr)
+                
+                .else
+                
+                .set_crtc 4,36
+                .set_crtc 6,23
+                .set_crtc 7,32
+
+                .endif
 
                 lda #$07
                 sta $fe21
 
-                ldx #135
+                ldx #132
                 jsr wait_roughly_x_scanlines
 
                 lda #$03
                 sta $fe21
+                
+                .if third_split
+
+                ; 6/19 rows of dashboard part.
+
+                .set_crtc 4,19
+                .set_crtc 6,6
+                .set_crtc 7,13
+
+                ; jsr cycles_wait_128
+
+                ; .set_crtc 6,23
+                ; .set_crtc 7,32
+
+                .endif
 
                 jsr cycles_wait_128
 
                 lda #$07
                 sta $fe21
+
+                ; wait for vsync
+                lda #2
+-
+                bit $fe4d
+                beq -
+
+                sta $fe4d
 
                 rts
                 .pend
