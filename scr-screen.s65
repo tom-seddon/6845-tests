@@ -1,4 +1,4 @@
-draw_timer_adjustment=64
+draw_timer_adjustment=0
 
                 .include "framework.s65"
 
@@ -58,16 +58,6 @@ fx_init_1: .proc
                 ldy #3
                 jsr vdu19
 
-                ldx #$00
-                ldy #$60
-                jsr fill_rows
-
-                ldx #$38
-                ldy #$61
-                jsr fill_rows
-
-                jsr show_rows
-
                 rts
 
 vdu19:
@@ -86,82 +76,10 @@ vdu19:
                 jmp oswrch
 
 load_scr_hud:
-                .text "LOAD SCR-HUD FFFF6000",13
+                .text "LOAD SCR-HU2 FFFF6000",13
                 .pend
 
-show_rows: .proc
-                lda #$00
-                sta ptr+0
-                lda #$58
-                sta ptr+1
-loop:
-                ldy #7
-                lda (ptr),y
-                cmp #$ff
-                lda #$00
-                bcs +
-                lda #$ff
-+
-                sta (ptr),y
-
-                clc
-                lda ptr+0
-                adc #8
-                sta ptr+0
-                lda ptr+1
-                adc #0
-                sta ptr+1
-                bpl loop
-                rts
-                .pend
-                
-fill_rows: .proc
-                stx sta_dest+1
-                sty sta_dest+2
-                lda #8
-                sta row_counter
-                lda #0
-                sta colour_index
-one_row:
-                ldx colour_index
-                lda colours,x
-                ldx #7
-one_byte:
-sta_dest:
-                sta $ffff,x
-                dex
-                bpl one_byte
-
-                clc
-                lda sta_dest+1
-                adc #$40
-                sta sta_dest+1
-                lda sta_dest+2
-                adc #$01
-                sta sta_dest+2
-
-                ldx colour_index
-                inx
-                cpx #3
-                bne +
-                ldx #0
-+
-                stx colour_index
-
-                dec row_counter
-                bne one_row
-
-                rts
-                
-row_counter:
-                .byte 0
-
-colour_index:
-                .byte 0
-                
-colours:
-                .byte $0f,$f0,$ff
-                .pend
+;-------------------------------------------------------------------------
 
 cycles_wait_1024:
                 jsr cycles_wait_512
@@ -194,8 +112,8 @@ loop:
                 .pend
 
 top_addr=$6000
-main_addr_0=$6140
-main_addr_1=$3140
+main_addr_0=$6280
+main_addr_1=$3280
 dashboard_addr=$6000+19*320
 
 fx_update: .proc
@@ -204,31 +122,37 @@ fx_update: .proc
 
                 inc counter
                 lda counter
-                and #15
+                and #31
                 bne +
 
-                lda main_crtc_addr+0
-                eor #(<crtc_addr(main_addr_0))^(<crtc_addr(main_addr_1))
-                sta main_crtc_addr+0
+                ; lda main_crtc_addr+0
+                ; eor #(<crtc_addr(main_addr_0))^(<crtc_addr(main_addr_1))
+                ; sta main_crtc_addr+0
 
-                lda main_crtc_addr+1
-                eor #(>crtc_addr(main_addr_0))^(>crtc_addr(main_addr_1))
-                sta main_crtc_addr+1
+                ; lda main_crtc_addr+1
+                ; eor #(>crtc_addr(main_addr_0))^(>crtc_addr(main_addr_1))
+                ; sta main_crtc_addr+1
 
 +                
                 ; prepare for start of next screen
-                .set_crtc 13,$00
-                .set_crtc 12,$0c
+                .set_crtc 13,<crtc_addr(top_addr)
+                .set_crtc 12,>crtc_addr(top_addr)
+                
+                .set_crtc 7,32
+                .set_crtc 6,24
                 
                 rts
                 .pend
 
 fx_draw: .proc
-                ; set up screen for game part
+                ; 2/2 rows of HUD part, and prepare address for game
+                ; part
 
-                .set_crtc 4,0   ;16  16
+                lda #$01
+                sta $fe21       ;6
 
-                .if true
+                .set_crtc 4,1   ;22
+
                 lda #12              ;2
                 sta $fe00            ;8
                 lda main_crtc_addr+1 ;11
@@ -238,48 +162,41 @@ fx_draw: .proc
                 sta $fe00            ;26
                 lda main_crtc_addr+0 ;29
                 sta $fe01            ;36  52
+
+                lda #$07
+                sta $fe21
+
+                ; wait until in game part
+
+                jsr cycles_wait_1024
+                jsr cycles_wait_1024
+                jsr cycles_wait_128
+                .nops 60
+
+                ; 18/18 rows of game part, and prepare address for
+                ; dashboard part
+                lda #$02
+                sta $fe21
                 
-                .else
-                
-                .nops 36        ;36  52
-                
-                .endif
-                
-                .set_crtc 7,$ff ;68
-                .set_crtc 6,$ff ;84
-                
-                .nops 128-84
+                .set_crtc 4,36
 
-                ; .set_crtc 4,19  ;
-                ; .set_crtc 6,$ff
-                ; .set_crtc 
+                .set_crtc 12,>crtc_addr(dashboard_addr)
+                .set_crtc 13,<crtc_addr(dashboard_addr)
 
-                ; ldx #
-                ; jsr wait_roughly_x_scanlines
+                lda #$07
+                sta $fe21
 
-                ; jsr cycles_wait_128
-                ; jsr cycles_wait_128
-                ; jsr cycles_wait_128
-                ; jsr cycles_wait_128
-
-                ; jsr cycles_wait_128
-                ; jsr cycles_wait_128
-                ; jsr cycles_wait_128
-                ; jsr cycles_wait_128
-
-; nreps=1
-                ; .rept nreps
-                ; jsr cycles_wait_1024
-                ; .next
-
-                ; now in game part
-                .set_crtc 4,37
-                .set_crtc 7,32
-                .set_crtc 6,24
-
-                ldx #200
+                ldx #135
                 jsr wait_roughly_x_scanlines
-                
+
+                lda #$03
+                sta $fe21
+
+                jsr cycles_wait_128
+
+                lda #$07
+                sta $fe21
+
                 rts
                 .pend
 
