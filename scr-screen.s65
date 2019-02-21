@@ -5,8 +5,9 @@ draw_timer_adjustment=64
 ;-------------------------------------------------------------------------
 
                 .section zp
-base: .fill 1
+main_crtc_addr: .fill 2
 ptr: .fill 2
+counter: .fill 1
                 .send zp
 
                 .section code
@@ -173,8 +174,12 @@ cycles_wait_256:
 ;-------------------------------------------------------------------------
 
 fx_init_2: .proc
-                lda #$0c
-                sta base
+                lda #<crtc_addr(main_addr_0)
+                sta main_crtc_addr+0
+
+                lda #>crtc_addr(main_addr_0)
+                sta main_crtc_addr+1
+                
                 rts
                 .pend
 
@@ -187,15 +192,30 @@ loop:
                 bne loop
                 rts
                 .pend
-                
+
+top_addr=$6000
+main_addr_0=$6140
+main_addr_1=$3140
+dashboard_addr=$6000+19*320
+
 fx_update: .proc
                 ; .set_crtc 12,$0c
                 ; .set_crtc 13,$00
 
-                lda base
-                eor #($c^$6)
-                sta base
+                inc counter
+                lda counter
+                and #15
+                bne +
 
+                lda main_crtc_addr+0
+                eor #(<crtc_addr(main_addr_0))^(<crtc_addr(main_addr_1))
+                sta main_crtc_addr+0
+
+                lda main_crtc_addr+1
+                eor #(>crtc_addr(main_addr_0))^(>crtc_addr(main_addr_1))
+                sta main_crtc_addr+1
+
++                
                 ; prepare for start of next screen
                 .set_crtc 13,$00
                 .set_crtc 12,$0c
@@ -206,22 +226,36 @@ fx_update: .proc
 fx_draw: .proc
                 ; set up screen for game part
 
-                .set_crtc 4,0   ;16
+                .set_crtc 4,0   ;16  16
 
                 .if true
-                .set_crtc 13,$28 ;32
-                lda #12
-                sta $fe00
-                lda base
-                sta $fe01       ;48
+                lda #12              ;2
+                sta $fe00            ;8
+                lda main_crtc_addr+1 ;11
+                sta $fe01            ;18
+
+                lda #13              ;20
+                sta $fe00            ;26
+                lda main_crtc_addr+0 ;29
+                sta $fe01            ;36  52
+                
                 .else
-                .nops 32        ;48
+                
+                .nops 36        ;36  52
+                
                 .endif
                 
-                .set_crtc 7,$ff ;64
-                .set_crtc 6,$ff ;80
+                .set_crtc 7,$ff ;68
+                .set_crtc 6,$ff ;84
                 
-                .nops 128-80
+                .nops 128-84
+
+                ; .set_crtc 4,19  ;
+                ; .set_crtc 6,$ff
+                ; .set_crtc 
+
+                ; ldx #
+                ; jsr wait_roughly_x_scanlines
 
                 ; jsr cycles_wait_128
                 ; jsr cycles_wait_128
