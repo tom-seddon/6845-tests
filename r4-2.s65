@@ -44,8 +44,13 @@ fx_draw: .proc
                 jsr cycles_wait_128
                 .set_mode2_palette 0,0
 
-                ; HD6845 - screen goes nuts, as expected
-                ; VL6845 - ignored, as row counter is not 0
+                ; HD6845 - screen goes initially nuts, as expected,
+                ; then settles down (since eventually the fx_draw loop
+                ; and the TV end up in sync up enough to give a steady
+                ; display)
+                ;
+                ; VL6845 - screen steady the whole time, as R4 is
+                ; never 255 during row 0
                 
                 .set_crtc 4,$ff
                 
