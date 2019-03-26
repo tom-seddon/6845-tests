@@ -298,6 +298,16 @@ main: .proc
 
                 ; Exact cycle VSYNC by Hexwab
 
+                .set_crtc 0,0
+                ; DRAM refresh is inhibited in this state, so don't
+                ; wait too long.
+                ;
+                ; 128+ cycles ought to suffice, but 256 seems to be
+                ; necessary - presumably there's some other counter
+                ; that has to overflow?
+                jsr cycles_wait_256
+                .set_crtc 0,127
+                
 		lda #2
 -
 		bit $FE4D
