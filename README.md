@@ -1,7 +1,36 @@
 # 6845 tests
 
-Load SSD, boot with Shift+BREAK. The menu sets up KEY10 to re-run the
-same test on BREAK, for quicker iteration.
+Some quick tests for the BBC Micro's 6845 CRTC chip.
+
+This repo has submodules; clone with with `git clone --recursive`.
+
+# how to build
+
+## Windows
+
+Prerequisites: Python 2.x on PATH
+
+Run `snmake` from command prompt.
+
+To manually provide path to Python, supply `PYTHON=xxx` on the make
+command line.
+
+## POSIX
+
+Prerequisites: Python 2.x on PATH,
+[64tass](https://sourceforge.net/projects/tass64/) on PATH
+
+Run `make` from terminal.
+
+To manually provide path to Python and/or 64tass, supply `PYTHON=xxx`
+and/or TASS=xxx` on the make command line.
+
+# how to run tests
+
+Load SSD from `ssds` folder, boot with Shift+BREAK. There's an ssd
+created for each individual test, and `6845-tests.ssd`, which contains
+all of them. The `6845-tests` menu sets up KEY10 to re-run the same
+test on BREAK, for quicker iteration.
 
 Undocumented tests are undocumented - I probably haven't decided what
 conclusion to draw.
