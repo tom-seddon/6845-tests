@@ -1,0 +1,3 @@
+[submodule "submodules/beeb"]
+	path = submodules/beeb
+	url = https://github.com/tom-seddon/beeb

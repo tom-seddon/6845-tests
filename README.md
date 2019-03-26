@@ -6,6 +6,15 @@ same test on BREAK, for quicker iteration.
 Undocumented tests are undocumented - I probably haven't decided what
 conclusion to draw.
 
+# test
+
+Simply change the background palette a couple of times.
+
+This demonstrates that the vsync sync isn't quite perfect: press BREAK
+repeatedly, and the split point can shift by one marker (which
+represents 1 usec). This seems to be something to do with switching
+the CRTC between 2MHz and 1MHz modes.
+
 # r4-2
 
 Show discrepancy between VL6845 and HD6845: the value of R4 is only

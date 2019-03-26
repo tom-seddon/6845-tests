@@ -2,7 +2,10 @@
 ##########################################################################
 ##########################################################################
 
-TASS:=64tass --m65c02 --cbm-prg -Wall -C --line-numbers
+TASSEXE?=64tass
+PYTHON?=python
+
+TASS:=$(TASSEXE) --m65c02 --cbm-prg -Wall -C --line-numbers
 
 VOLUME:=beeb/
 DEST:=$(VOLUME)/0
@@ -28,7 +31,7 @@ build:
 	$(MAKE) assemble SRC=r4-2 BBC=R4-2
 	$(MAKE) assemble SRC=r4-3 BBC=R4-3
 	$(MAKE) assemble SRC=curs-1 BBC=CURS-1
-	ssd_create -4 3 -o $(SSD)/6845-tests.ssd $(DEST)/@.* $(DEST)/$$.!BOOT $(DEST)/$$.SCREEN $(DEST)/$$.SCREEN2 $(DEST)/$$.SCR-HUD $(DEST)/$$.MENU
+	$(PYTHON) submodules/beeb/ssd_create.py -4 3 -o $(SSD)/6845-tests.ssd $(DEST)/@.* $(DEST)/$$.!BOOT $(DEST)/$$.SCREEN $(DEST)/$$.SCREEN2 $(DEST)/$$.SCR-HUD $(DEST)/$$.MENU
 #	-@$(MAKE) test_b2 NAME=6845-tests
 
 ##########################################################################
@@ -38,11 +41,8 @@ build:
 assemble:
 	mkdir -p $(DEST) $(TMP)
 	$(TASS) $(SRC).s65 -L$(TMP)/$(SRC).lst -l$(TMP)/$(SRC).sym -o$(TMP)/$(SRC).prg
-	python convert_prg.py $(TMP)/$(SRC).prg $(DEST)/@.$(BBC)
-	ssd_create -o $(SSD)/6845-test-$(BBC).ssd $(DEST)/@.$(BBC) $(DEST)/$$.SCREEN --build "*/@.$(BBC)"
-
-##########################################################################
-##########################################################################
+	$(PYTHON) convert_prg.py $(TMP)/$(SRC).prg $(DEST)/@.$(BBC)
+	$(PYTHON) submodules/beeb/ssd_create.py -o $(SSD)/6845-test-$(BBC).ssd $(DEST)/@.$(BBC) $(DEST)/$$.SCREEN --build "*/@.$(BBC)"
 
 ##########################################################################
 ##########################################################################
