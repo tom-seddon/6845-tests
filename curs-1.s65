@@ -1,0 +1,119 @@
+draw_timer_adjustment=0
+
+                .include "framework.s65"
+
+;-------------------------------------------------------------------------
+
+                .section zp
+                .send zp
+
+;-------------------------------------------------------------------------
+
+                .section code
+
+;-------------------------------------------------------------------------
+
+fx_init_1: .proc
+                ldx #0
+-
+                lda init_text,x
+                cmp #$ff
+                beq +
+                jsr oswrch
+                inx
+                jmp -
++
+
+                ldx #0
+                lda #'_'
+-
+                jsr oswrch
+                dex
+                bne -
+                
+                rts
+
+init_text:
+                .byte 22,4
+                .byte 19,0,4,0,0,0
+                .byte 255
+                .pend
+
+;-------------------------------------------------------------------------
+
+blink=false
+slow_blink=true
+
+; No blink + slow blink (%x01xxxxx) hides the cursor...
+r10_value=(blink?64:0)|(blink&&slow_blink?32:0)
+                
+                
+fx_init_2: .proc
+                .set_crtc 8,0   ;enable cursor
+                .set_crtc 10,r10_value
+                .set_crtc 11,8
+
+                .set_crtc 14,>crtc_addr($5800)
+                .set_crtc 15,<crtc_addr($5800)
+                rts
+                .pend
+
+;-------------------------------------------------------------------------
+
+fx_update: .proc
+                rts
+                .pend
+
+;-------------------------------------------------------------------------
+
+cursor .macro addr
+                .set_crtc 14,>crtc_addr(\addr)
+                .set_crtc 15,<crtc_addr(\addr)
+                .endm
+
+cursor_addr=$5940
+cursor_addr_0=cursor_addr+128
+cursor_addr_1=cursor_addr+256
+                
+fx_draw: .proc
+                jsr cycles_wait_1024
+                
+                .rept 8
+                .cursor cursor_addr_0   ;32
+                .cursor cursor_addr_1   ;32
+                .nops 128-64
+                .next
+
+                .cursor $6000
+
+                ; .cursor addr1   ;32
+                ; .nops 128-32
+
+                ; .cursor addr0   ;32
+                ; .nops 128-32
+
+                ; .cursor addr1   ;32
+                ; .nops 128-32
+
+                ; .cursor addr0   ;32
+                ; .nops 128-32
+
+                ; .cursor addr1   ;32
+                ; .nops 128-32
+                
+                ; .cursor addr0   ;32
+                ; .nops 128-32
+
+                ; .cursor addr1   ;32
+                ; .nops 128-32
+
+                ; .set_crtc 14,>crtc_addr($5a00)
+                ; .set_crtc 15,<crtc_addr($5a00)
+                
+                rts
+                .pend
+
+;-------------------------------------------------------------------------
+
+                .send code
+                
