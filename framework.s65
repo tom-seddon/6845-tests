@@ -12,8 +12,12 @@
 ;
 ; The following routines must be provided:
 ;
-; 1. fx_init_1 - called once, with interrupts enabled and ZP cleared, before
-; anything else happens.
+; 1. fx_init_1 - called once, with interrupts enabled and ZP cleared,
+; before anything else happens.
+;
+; (If fx_init_1 changes mode, it must set the OS copy of the video ULA
+; register to indicate whether it's a 1MHz or 2MHz mode - so change
+; mode with VDU22 and/or use *FX154 to update the video ULA register.)
 ;
 ; 2. fx_init_2 - called once, roughly at start of frame, interrupts
 ; disabled, once things are set up
@@ -269,6 +273,14 @@ main: .proc
                 ; Load SIDEWAYS RAM modules here!
                 jsr fx_init_1
 
+                ; get video ULA control register value
+                lda #$b8        ;AUG 193, MasRef D.2-56
+                ldx #0
+                ldy #255
+                jsr osbyte
+                txa
+                pha             ;save video ULA control register value
+
                 ; Turn off cursor
                 .set_crtc 10,32
 
@@ -305,7 +317,18 @@ main: .proc
                 ; The horizontal total register is 8 bits, so a delay
                 ; of 256+ cycles is required.
                 jsr cycles_wait_256
-                .set_crtc 0,127
+
+                lda #0
+                sta $fe00
+
+                ldx #63         ;appropriate R0 value for 1MHz modes
+                pla             ;restore video ULA control register
+                                ;value
+                and #$10        ;Z=0 if 2MHz, Z=1 if 1MHz
+                beq +           ;taken if 1MHz mode
+                ldx #127        ;appropriate R0 value for 2MHz modes
++
+                stx $fe01
                 
 		lda #2
 -
