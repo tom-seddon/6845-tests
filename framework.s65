@@ -191,6 +191,7 @@ set_mode2_palette: .macro index,colour
 
                 .weak
 draw_timer_adjustment=0
+max_end_address=$3000
                 .endweak
                 
 video_control=$fe20   
@@ -245,7 +246,7 @@ nops_tmp: .fill 1               ; may be overwritten by .nops macro
 
 *=$1900
                 .dsection code
-                .cerror *>=$3000,"main RAM overflow"
+                .cerror *>=max_end_address,"main RAM overflow"
 
 ;-------------------------------------------------------------------------
 ; 	Code entry
