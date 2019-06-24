@@ -21,6 +21,8 @@ DEST:=$(VOLUME)/0
 TMP:=.tmp
 SSD:=ssds
 
+BEEB_BIN:=submodules/beeb/bin
+
 ##########################################################################
 ##########################################################################
 
@@ -39,7 +41,7 @@ build:
 	$(MAKE) assemble SRC=scr-screen BBC=SCR-SCR
 	$(MAKE) assemble SRC=r4-2 BBC=R4-2
 	$(MAKE) assemble SRC=r4-3 BBC=R4-3
-	$(PYTHON) submodules/beeb/ssd_create.py -4 3 -o $(SSD)/6845-tests.ssd $(DEST)/@.* $(DEST)/$$.!BOOT $(DEST)/$$.SCREEN $(DEST)/$$.SCREEN2 $(DEST)/$$.SCR-HUD $(DEST)/$$.MENU
+	$(PYTHON) $(BEEB_BIN)/ssd_create.py -4 3 -o $(SSD)/6845-tests.ssd $(DEST)/@.* $(DEST)/$$.!BOOT $(DEST)/$$.SCREEN $(DEST)/$$.SCREEN2 $(DEST)/$$.SCR-HUD $(DEST)/$$.MENU
 #	-@$(MAKE) test_b2 NAME=6845-tests
 
 ##########################################################################
@@ -50,8 +52,8 @@ assemble:
 	$(MKDIR_P) "$(DEST)"
 	$(MKDIR_P) "$(TMP)"
 	$(TASSCMD) $(SRC).s65 -L$(TMP)/$(SRC).lst -l$(TMP)/$(SRC).sym -o$(TMP)/$(SRC).prg
-	$(PYTHON) bin/convert_prg.py $(TMP)/$(SRC).prg $(DEST)/@.$(BBC)
-	$(PYTHON) submodules/beeb/ssd_create.py -o $(SSD)/6845-test-$(BBC).ssd $(DEST)/@.$(BBC) $(DEST)/$$.SCREEN --build "*/@.$(BBC)"
+	$(PYTHON) $(BEEB_BIN)/prg2bbc.py $(TMP)/$(SRC).prg $(DEST)/@.$(BBC)
+	$(PYTHON) $(BEEB_BIN)/ssd_create.py -o $(SSD)/6845-test-$(BBC).ssd $(DEST)/@.$(BBC) $(DEST)/$$.SCREEN --build "*/@.$(BBC)"
 
 ##########################################################################
 ##########################################################################
@@ -59,7 +61,7 @@ assemble:
 .PHONY:clean
 clean:
 	$(RM_RF) "$(TMP)"
-	$(RM_RF) "$(SSDS)"
+	$(RM_RF) "$(SSD)"
 
 .PHONY:test_b2
 test_b2:
