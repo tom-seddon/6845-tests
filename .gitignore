@@ -1,4 +1,3 @@
-/.tmp/
+/build/
 /beeb/**/@.*
 *.pyc
-/ssds/

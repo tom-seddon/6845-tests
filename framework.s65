@@ -254,7 +254,7 @@ nops_tmp: .fill 1               ; may be overwritten by .nops macro
 ;-------------------------------------------------------------------------
 
                 .section code
-main: .proc
+main: .block
 ; Set interrupts
                 ; Initalise system vars
 
@@ -507,7 +507,7 @@ dejitter_offsets:
                 .dejitter case_18
                 .endp
 
-                .pend
+                .bend
                 
 ;-------------------------------------------------------------------------
 ; 	HELPER FUNCTIONS
