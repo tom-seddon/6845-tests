@@ -64,6 +64,7 @@ _assemble:
 ssds:
 	$(MAKE) clean
 	$(MAKE) build
+	$(SHELLCMD) rm-tree "$(SSD)"
 	$(SHELLCMD) mkdir "$(SSD)"
 	$(MAKE) _parts ACTION=_copy_ssd
 
@@ -77,7 +78,6 @@ _copy_ssd:
 .PHONY:clean
 clean:
 	$(SHELLCMD) rm-tree "$(TMP)"
-	$(SHELLCMD) rm-tree "$(SSD)"
 
 .PHONY:test_b2
 test_b2:
