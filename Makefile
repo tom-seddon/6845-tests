@@ -45,6 +45,7 @@ _parts:
 	$(MAKE) $(ACTION) SRC=scr-screen BBC=SCR-SCR
 	$(MAKE) $(ACTION) SRC=r4-2 BBC=R4-2
 	$(MAKE) $(ACTION) SRC=r4-3 BBC=R4-3
+	$(MAKE) $(ACTION) SRC=cursor_flash BBC=CUFLASH
 
 ##########################################################################
 ##########################################################################
@@ -55,7 +56,6 @@ _assemble:
 	$(SHELLCMD) mkdir "$(TMP)"
 	$(TASSCMD) "$(SRC).s65" "-L$(TMP)/$(SRC).lst" "-l$(TMP)/$(SRC).sym" "-o$(TMP)/$(SRC).prg"
 	$(PYTHON) $(BEEB_BIN)/prg2bbc.py "$(TMP)/$(SRC).prg" "$(DEST)/@.$(BBC)"
-	$(PYTHON) $(BEEB_BIN)/ssd_create.py -o "$(TMP)/6845-test-$(BBC).ssd" "$(DEST)/@.$(BBC)" "$(DEST)/$$.SCREEN" --build "*/@.$(BBC)"
 
 ##########################################################################
 ##########################################################################
@@ -66,11 +66,11 @@ ssds:
 	$(MAKE) build
 	$(SHELLCMD) rm-tree "$(SSD)"
 	$(SHELLCMD) mkdir "$(SSD)"
-	$(MAKE) _parts ACTION=_copy_ssd
+	$(MAKE) _parts ACTION=_create_ssd
 
-.PHONY:_copy_ssd
-_copy_ssd:
-	$(SHELLCMD) copy-file "$(TMP)/6845-test-$(BBC).ssd" "$(SSD)/"
+.PHONY:_create_ssd
+_create_ssd:
+	$(PYTHON) $(BEEB_BIN)/ssd_create.py -o "$(SSD)/6845-test-$(SRC).ssd" "$(DEST)/@.$(BBC)" "$(DEST)/$$.SCREEN" --build "*/@.$(BBC)"
 
 ##########################################################################
 ##########################################################################

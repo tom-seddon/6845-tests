@@ -1,0 +1,79 @@
+; Confirm that cursor flash timer is updated at end of frame.
+; Generates a display with 16 frame endings, 15 rows of text (each
+; with a cursor), and 1/16th blink rate. 8 frames get a cursor, 8
+; frames get none.
+
+draw_timer_adjustment=24
+
+;-------------------------------------------------------------------------
+
+                .include "framework.s65"
+                
+;-------------------------------------------------------------------------
+
+                .section zp
+                .send zp
+
+;-------------------------------------------------------------------------
+
+                .section code
+
+;-------------------------------------------------------------------------
+
+fx_init_1: .proc
+                ldx #0
+-
+                lda init_text,x
+                jsr oswrch
+                inx
+                cpx #init_text.end-init_text
+                bne -
+
+                rts
+
+init_text: .block
+                .text 22,2
+                .text "Hello"
+end:
+                .bend
+                
+                
+                .pend
+
+;-------------------------------------------------------------------------
+
+fx_init_2: .proc
+                ; reinstate cursor, which the framework helpfully (?)
+                ; disables
+                .set_crtc 10,%01000111
+                rts
+                .pend
+
+;-------------------------------------------------------------------------
+
+fx_update: .proc
+                rts
+                .pend
+
+;-------------------------------------------------------------------------
+
+                .align 256
+fx_draw: .proc
+                .set_crtc 6,1
+                .set_crtc 4,1
+                .set_crtc 7,255
+                .for i=0,i<15,i+=1
+                lda #mode2_palette(0,0);1+(i%5))
+                sta video_palette
+                .nops 16*128-6
+                .next
+                .set_crtc 6,0
+                .set_crtc 4,8
+                .set_crtc 7,4
+                rts
+                .pend
+                
+;-------------------------------------------------------------------------
+
+                .send code
+                
