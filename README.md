@@ -27,10 +27,13 @@ and/or TASS=xxx` on the make command line.
 
 # how to run tests
 
-Load SSD from `ssds` folder, boot with Shift+BREAK. There's an ssd
-created for each individual test, and `6845-tests.ssd`, which contains
-all of them. The `6845-tests` menu sets up KEY10 to re-run the same
-test on BREAK, for quicker iteration.
+Using BeebLink, add `beeb` in the working copy to the search path. The
+volume name is `6845-tests`. Press Shift+BREAK to boot, and select
+test of interest from the menu. `*KEY10` is set to re-run the test on
+BREAK, for quick iteration.
+
+To run from SSD, use an SSD from `ssds` folder, and boot with
+Shift+BREAK. There's an ssd created for each individual test.
 
 Undocumented tests are undocumented - I probably haven't decided what
 conclusion to draw.
@@ -41,13 +44,13 @@ Simply change the background palette a couple of times.
 
 # r4-2
 
-Show discrepancy between VL6845 and HD6845: the value of R4 is only
-read during CRTC row 0.
+Show discrepancy between VL6845 and HD6845: VL6845 only reads the
+value of R4 during CRTC row 0.
 
 # r4-3
 
 Show discrepancy between VL6845 and HD6845: when changing R4 on the
-last CRTC row, a new frame starts immediately.
+last CRTC row, the VL6845 starts a new frame immediately.
 
 # r6
 
@@ -58,7 +61,13 @@ immediately, even mid-scanline.
 
 Check the vertical displayed counter is compared using ==.
 
-# scr-scr (scr-screen on PC)
+# scr-screen (`SCR-SCR` on Beeb)
 
 Testbed for VL6845-friendly screen layout for
 [Stunt Car Racer](https://github.com/kieranhj/scr-beeb).
+
+# cursor_flash (`CUFLASH` on Beeb)
+
+Show discrepancy between VL6845 and HD6845: VL6845 updates the cursor
+flash timer when the vertical total (R4) is reached, rather than the
+vertical displayed (R6).

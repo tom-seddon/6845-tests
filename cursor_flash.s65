@@ -1,7 +1,19 @@
-; Confirm that cursor flash timer is updated at end of frame.
-; Generates a display with 16 frame endings, 15 rows of text (each
-; with a cursor), and 1/16th blink rate. 8 frames get a cursor, 8
-; frames get none.
+; VL6845/HD6845 difference:
+;
+; - VL6845 updates cursor flash timer at end of frame, when the
+; vertical total is reached.
+;
+; - HD6845 updates cursor flash timer at bottom of screen, when the
+; vertical displayed total is reached.
+;
+; Display shown has 16 frames: 15*2 rows, 1*7 rows. There are 16 ends
+; of frame, and 1 bottom of screen. Cursor flash period is 16 frames.
+;
+; On VL6845, there's one flash period per CRTC frame, so you get 8
+; displayed cursors and 8 hidden cursors. 15 of these are visible.
+;
+; On HD6845, there's one flash period per displayed TV field, so the
+; cursor flashes as normal.
 
 draw_timer_adjustment=24
 
@@ -59,7 +71,7 @@ fx_update: .proc
 
                 .align 256
 fx_draw: .proc
-                .set_crtc 6,1
+                .set_crtc 6,3
                 .set_crtc 4,1
                 .set_crtc 7,255
                 .for i=0,i<15,i+=1
@@ -67,7 +79,7 @@ fx_draw: .proc
                 sta video_palette
                 .nops 16*128-6
                 .next
-                .set_crtc 6,0
+                .set_crtc 6,0   ;induce bottom of screen
                 .set_crtc 4,8
                 .set_crtc 7,4
                 rts
