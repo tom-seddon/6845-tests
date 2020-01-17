@@ -139,8 +139,19 @@ mode2_right .function mode2_right_index
 mode2_value .function mode2_value_left,mode2_value_right
                 .endf mode2_left(mode2_value_left)|mode2_right(mode2_value_right)
 
+;-------------------------------------------------------------------------
+
+                ; this produces the left pixel
+mode5_left .function mode5_3_index
+                .endf ((mode5_3_index&2)<<6)|((mode5_3_index&1)<<3)
+
+mode5_value .function mode5_0,mode5_1,mode5_2,mode5_3
+                .endf (mode5_left(mode5_0)>>0)|(mode5_left(mode5_1)>>1)|(mode5_left(mode5_2)>>2)|(mode5_left(mode5_3)>>3)
+                
+;-------------------------------------------------------------------------
                 ; http://6502.org/tutorials/65c02opcodes.html
 
+                
 nops: .macro ncycles
 n:=\ncycles
 
@@ -193,6 +204,7 @@ set_mode2_palette: .macro index,colour
 draw_timer_adjustment=0
 start_address=$1900
 max_end_address=$3000
+show_cursor=false
                 .endweak
                 
 video_control=$fe20   
@@ -283,8 +295,10 @@ main: .block
                 txa
                 pha             ;save video ULA control register value
 
+                .if !show_cursor
                 ; Turn off cursor
                 .set_crtc 10,32
+                .endif
 
                 lda #19
                 jsr osbyte
@@ -524,6 +538,30 @@ cycles_wait_128:                ; JSR to get here takes 6c
                 .nops 116
 cycles_wait_12:
                 rts
+
+print_string: .proc
+                pla
+                sta rd+1
+                pla
+                sta rd+2
+-
+rd:
+                .if (*&$ff)==$fe
+                nop
+                .endif
+                lda $ffff
+                inc rd+1
+                bne +
+                inc rd+2
++
+                cmp #255
+                beq +
+                jsr oswrch
+                jmp -
+
++
+                jmp (rd+1)
+                .pend
 
 load_mode2_screen: .proc
                 lda #22

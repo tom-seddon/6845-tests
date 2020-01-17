@@ -38,36 +38,61 @@ Shift+BREAK. There's an ssd created for each individual test.
 Undocumented tests are undocumented - I probably haven't decided what
 conclusion to draw.
 
-# test
+# VL6845/HD6845 discrepancies
+
+## r4-2 ##
+
+VL6845 only reads the value of R4 during CRTC row 0.
+
+## r4-3 ##
+
+When changing R4 on the last CRTC row, the VL6845 starts a new frame
+immediately.
+
+## cursor_flash (`CUFLASH` on Beeb) ##
+
+VL6845 updates the cursor flash timer when the vertical total (R4) is
+reached; HD6845 updates it when the vertical displayed (R6) is
+reached.
+
+## r1=0 ##
+
+VL6845 displays the first column when R1=0, and fails to update the
+address at the end of each displayed row. The first row is displayed
+repeatedly.
+
+HD6845 displays nothing.
+
+## r1=255
+
+VL6845 displays the final displayed column - note the red block and
+the blue block to the left of the first column.
+
+(VL6845 also displays additional cursors.)
+
+HD6845 hides the final displayed column - note that only the red block
+is visible. The blue block is hidden.
+
+Both fail to update the address at the end of each displayed row. The
+first row is displayed repeatedly.
+
+# Other tests
+
+## test ##
 
 Simply change the background palette a couple of times.
 
-# r4-2
-
-Show discrepancy between VL6845 and HD6845: VL6845 only reads the
-value of R4 during CRTC row 0.
-
-# r4-3
-
-Show discrepancy between VL6845 and HD6845: when changing R4 on the
-last CRTC row, the VL6845 starts a new frame immediately.
-
-# r6
+## r6 ##
 
 Setting R6 to the current row number will stop the display
 immediately, even mid-scanline.
 
-# r6-2
+## r6-2 ##
 
 Check the vertical displayed counter is compared using ==.
 
-# scr-screen (`SCR-SCR` on Beeb)
+## scr-screen (`SCR-SCR` on Beeb) ##
 
 Testbed for VL6845-friendly screen layout for
 [Stunt Car Racer](https://github.com/kieranhj/scr-beeb).
 
-# cursor_flash (`CUFLASH` on Beeb)
-
-Show discrepancy between VL6845 and HD6845: VL6845 updates the cursor
-flash timer when the vertical total (R4) is reached, rather than the
-vertical displayed (R6).

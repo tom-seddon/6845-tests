@@ -46,6 +46,8 @@ _parts:
 	$(MAKE) $(ACTION) SRC=r4-2 BBC=R4-2
 	$(MAKE) $(ACTION) SRC=r4-3 BBC=R4-3
 	$(MAKE) $(ACTION) SRC=cursor_flash BBC=CUFLASH
+	$(MAKE) $(ACTION) SRC=r1=0 BBC=R1=0
+	$(MAKE) $(ACTION) SRC=r1=255 BBC=R1=255
 
 ##########################################################################
 ##########################################################################
@@ -78,6 +80,14 @@ _create_ssd:
 .PHONY:clean
 clean:
 	$(SHELLCMD) rm-tree "$(TMP)"
+	$(MAKE) _parts ACTION=_delete_beeb_file
+
+.PHONY:_delete_beeb_file
+_delete_beeb_file:
+	$(SHELLCMD) rm-file "$(DEST)/@.$(BBC)"
+
+##########################################################################
+##########################################################################
 
 .PHONY:test_b2
 test_b2:
