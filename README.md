@@ -68,13 +68,12 @@ HD6845 displays nothing.
 VL6845 displays the final displayed column - note the red block and
 the blue block to the left of the first column.
 
-(VL6845 also displays additional cursors.)
-
 HD6845 hides the final displayed column - note that only the red block
 is visible. The blue block is hidden.
 
 Both fail to update the address at the end of each displayed row. The
-first row is displayed repeatedly.
+first row is displayed repeatedly. (This isn't super obvious from the
+output! - but the code only puts data in the first character row.)
 
 # Other tests
 
