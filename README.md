@@ -75,6 +75,12 @@ Both fail to update the address at the end of each displayed row. The
 first row is displayed repeatedly. (This isn't super obvious from the
 output! - but the code only puts data in the first character row.)
 
+## r6=0
+
+VL6845 shows an empty screen.
+
+HD6845 shows 1 scanline.
+
 # Other tests
 
 ## test ##
