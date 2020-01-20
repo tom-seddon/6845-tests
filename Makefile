@@ -27,6 +27,7 @@ SHELLCMD:=$(PYTHON) submodules/shellcmd.py/shellcmd.py
 build:
 	$(SHELLCMD) mkdir "$(VOLUME)/0"
 	$(SHELLCMD) mkdir "$(TMP)"
+	$(SHELLCMD) mkdir "$(DEST)"
 	$(MAKE) _parts ACTION=_assemble
 #	-@$(MAKE) test_b2 NAME=6845-tests
 
@@ -49,14 +50,13 @@ _parts:
 	$(MAKE) $(ACTION) SRC=r1=0 BBC=R1=0
 	$(MAKE) $(ACTION) SRC=r1=255 BBC=R1=255
 	$(MAKE) $(ACTION) SRC=r6=0 BBC=R6=0
+	$(MAKE) $(ACTION) SRC=cursor_oddity BBC=CUODD
 
 ##########################################################################
 ##########################################################################
 
 .PHONY:_assemble
 _assemble:
-	$(SHELLCMD) mkdir "$(DEST)"
-	$(SHELLCMD) mkdir "$(TMP)"
 	$(TASSCMD) "$(SRC).s65" "-L$(TMP)/$(SRC).lst" "-l$(TMP)/$(SRC).sym" "-o$(TMP)/$(SRC).prg"
 	$(PYTHON) $(BEEB_BIN)/prg2bbc.py "$(TMP)/$(SRC).prg" "$(DEST)/@.$(BBC)"
 
