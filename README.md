@@ -81,6 +81,17 @@ VL6845 shows an empty screen.
 
 HD6845 shows 1 scanline.
 
+## cursor_oddity (`CUODD` on Beeb)
+
+(Goes with R1=255: additional odd behaviour in the last displayed
+column.)
+
+VL6845 uses the cursor address for the first column for the final
+column, if the final column is visible. (Exact logic TBC...)
+
+HD6845 never displays anything in the final column, so it's difficult
+to say.
+
 # Other tests
 
 ## test ##
