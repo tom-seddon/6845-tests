@@ -111,4 +111,3 @@ Check the vertical displayed counter is compared using ==.
 
 Testbed for VL6845-friendly screen layout for
 [Stunt Car Racer](https://github.com/kieranhj/scr-beeb).
-
