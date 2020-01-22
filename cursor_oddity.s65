@@ -51,8 +51,8 @@ fx_init_1: .proc
                 txa             ;A=video ULA control register value
                 and #%00011111  ;mask out everything except the cursor
                                 ;mode
-                ;ora #%10100000  ;_ __ - undocumented
-                ora #%11100000   ;____
+                ora #%10100000  ;_ __ - undocumented
+                ;ora #%11100000   ;____
                 sta $fe20
 
                 rts
