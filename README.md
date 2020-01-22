@@ -112,6 +112,9 @@ column, if the final column is visible. (Exact logic TBC...)
 HD6845 never displays anything in the final column, so it's difficult
 to say.
 
+(The cursor shown here is the undocumented cursor type, that has a
+hole in it - the hole is not an artefact!)
+
 VL6845: <img src="pics/VL6845/cursor_oddity.jpg">
 HD6845: <img src="pics/HD6845/cursor_oddity.jpg">
 
