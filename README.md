@@ -44,6 +44,9 @@ conclusion to draw.
 
 VL6845 only reads the value of R4 during CRTC row 0.
 
+<img src="pics/VL6845/r4-2.jpg">
+<img src="pics/HD6845/r4-2.jpg">
+
 ## r4-3 ##
 
 When changing R4 on the last CRTC row, the VL6845 starts a new frame
