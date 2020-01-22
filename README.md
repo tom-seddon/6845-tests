@@ -74,8 +74,8 @@ repeatedly.
 
 HD6845 displays nothing.
 
-VL6845: <img src="pics/VL6845/r1=0.jpg">
-HD6845: <img src="pics/HD6845/r1=0.jpg">
+VL6845: <img src="pics/VL6845/r1%3d0.jpg">
+HD6845: <img src="pics/HD6845/r1%3d0.jpg">
 
 ## r1=255
 
