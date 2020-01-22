@@ -44,8 +44,8 @@ conclusion to draw.
 
 VL6845 only reads the value of R4 during CRTC row 0.
 
-<img src="pics/VL6845/r4-2.jpg">
-<img src="pics/HD6845/r4-2.jpg">
+VL6845: <img src="pics/VL6845/r4-2.jpg">
+HD6845: <img src="pics/HD6845/r4-2.jpg">
 
 ## r4-3 ##
 
