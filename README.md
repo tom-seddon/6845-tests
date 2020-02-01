@@ -137,3 +137,13 @@ Check the vertical displayed counter is compared using ==.
 
 Testbed for VL6845-friendly screen layout for
 [Stunt Car Racer](https://github.com/kieranhj/scr-beeb).
+
+## cursor_r11 (`CUR11` on Beeb)
+
+Show that R11 is inclusive.
+
+## cursor_reset (`CURESET` on Beeb)
+
+Show that there's no per-row cursor enable latch. Looks like the
+cursor switches on when cursor is off and raster matches R10, and
+switches off when cursor is on and raster matches R11.

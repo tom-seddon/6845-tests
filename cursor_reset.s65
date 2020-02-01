@@ -1,0 +1,83 @@
+;-------------------------------------------------------------------------
+; This code is free software: you can redistribute it and/or modify it
+; under the terms of the GNU General Public License as published by
+; the Free Software Foundation, either version 3 of the License, or
+; (at your option) any later version.
+
+; This code is distributed in the hope that it will be useful, but
+; WITHOUT ANY WARRANTY; without even the implied warranty of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+; General Public License for more details.
+
+; You should have received a copy of the GNU General Public License
+; along with this code. If not, see <https://www.gnu.org/licenses/>.
+;-------------------------------------------------------------------------
+;
+; Is there any kind of cursor on/off latch?
+; 
+draw_timer_adjustment=0
+show_cursor=true
+                
+;-------------------------------------------------------------------------
+
+                .include "framework.s65"
+                
+;-------------------------------------------------------------------------
+
+                .section zp
+                .send zp
+
+;-------------------------------------------------------------------------
+
+                .section code
+
+;-------------------------------------------------------------------------
+
+fx_init_1: .proc
+                jsr print_string
+                .text 22,4,255
+
+                rts
+                
+                .pend
+
+;-------------------------------------------------------------------------
+
+fx_init_2: .proc
+                rts
+                .pend
+
+;-------------------------------------------------------------------------
+
+fx_update: .proc
+                rts
+                .pend
+
+;-------------------------------------------------------------------------
+
+                .align 256
+fx_draw: .proc
+                ; 0
+                .set_crtc 10,1  ;16 16
+                .set_crtc 11,1  ;16 32
+                .nops 9         ;96 128
+                .nops 128
+
+                ; 1
+                .nops 128
+
+                ; 2
+                .nops 128
+
+                ; 3
+                .set_crtc 10,6  ;16 16
+                .set_crtc 11,6  ;16 32
+                .nops 9         ;96 128
+                .nops 128
+                rts
+                .pend
+                
+;-------------------------------------------------------------------------
+
+                .send code
+                
