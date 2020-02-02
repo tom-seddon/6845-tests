@@ -60,7 +60,7 @@ fx_draw: .proc
                 ; 0
                 .set_crtc 10,1  ;16 16
                 .set_crtc 11,1  ;16 32
-                .nops 9         ;96 128
+                .nops 96        ;96 128
                 .nops 128
 
                 ; 1
@@ -72,7 +72,7 @@ fx_draw: .proc
                 ; 3
                 .set_crtc 10,6  ;16 16
                 .set_crtc 11,6  ;16 32
-                .nops 9         ;96 128
+                .nops 96        ;96 128
                 .nops 128
                 rts
                 .pend
