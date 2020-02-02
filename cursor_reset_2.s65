@@ -1,0 +1,169 @@
+;-------------------------------------------------------------------------
+; This code is free software: you can redistribute it and/or modify it
+; under the terms of the GNU General Public License as published by
+; the Free Software Foundation, either version 3 of the License, or
+; (at your option) any later version.
+
+; This code is distributed in the hope that it will be useful, but
+; WITHOUT ANY WARRANTY; without even the implied warranty of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+; General Public License for more details.
+
+; You should have received a copy of the GNU General Public License
+; along with this code. If not, see <https://www.gnu.org/licenses/>.
+;-------------------------------------------------------------------------
+;
+; Is there any kind of cursor on/off latch?
+; 
+draw_timer_adjustment=0
+show_cursor=true
+                
+;-------------------------------------------------------------------------
+
+                .include "framework.s65"
+                
+;-------------------------------------------------------------------------
+
+                .section zp
+                .send zp
+
+;-------------------------------------------------------------------------
+
+; 32 cycles
+set_cursor_address: .macro addr
+                .set_crtc 14,>crtc_addr(\addr)
+                .set_crtc 15,<crtc_addr(\addr)
+                .endm
+                
+                .section code
+
+;-------------------------------------------------------------------------
+
+fx_init_1: .proc
+                ; mode 6 is helpful, as there are more rasters per
+                ; row...
+                jsr print_string
+                .text 22,6
+                .text 19,0,4,0,0,0
+                .text '          $6000 $c00',10,13
+                .text ' 01234567 $6140 $c28',10,13
+                .text '          $6280 $c50',10,13
+                .text 255
+
+                lda #$ff
+                .for i=0,i<8,i+=1
+                sta $6008+i*8+i
+                .next
+
+                rts
+                
+                .pend
+
+;-------------------------------------------------------------------------
+
+fx_init_2: .proc
+                rts
+                .pend
+
+;-------------------------------------------------------------------------
+
+fx_update: .proc
+                .set_cursor_address $6000
+                rts
+                .pend
+
+;-------------------------------------------------------------------------
+
+                .align 256
+fx_draw: .proc
+;-------------------------------------------------------------------------
+
+                ; row 0
+
+                ; raster 0
+                ; set end>start
+                .set_crtc 10,1  ;16 16
+                .set_crtc 11,0  ;16 32
+                .nops 96        ;96 128
+
+                ; raster 1
+                .nops 128
+
+                ; raster 2
+                ; set start==end
+                .set_crtc 10,3
+                .set_crtc 11,3
+                jsr cycles_wait_128
+
+                ; raster 3
+                jsr cycles_wait_128
+
+                ; raster 4
+                jsr cycles_wait_128
+
+                ; raster 5
+                ; set end>start again
+                .set_crtc 10,7
+                .set_crtc 11,6
+
+                ; raster 6
+                jsr cycles_wait_128
+
+                ; raster 7
+                jsr cycles_wait_128
+
+                ; raster 8
+                jsr cycles_wait_128
+
+                ; raster 9
+                .set_cursor_address $6000+320 ;32 32
+                .set_crtc 10,0                ;16 48
+                .set_crtc 11,0                ;16 64
+                .nops 64                      ; 128
+
+                ; raster 10
+                jsr cycles_wait_128
+
+;-------------------------------------------------------------------------
+
+                ; row 1
+                jsr cycles_wait_1024
+                .set_cursor_address $6000+640 ;32 32
+                .nops 96                      ;96 128
+                jsr cycles_wait_128
+
+;-------------------------------------------------------------------------
+
+                ; row 2
+
+                ; raster 0
+                .set_crtc 10,1
+                .set_crtc 11,7
+                .nops 112
+
+                ; raster 1
+                jsr cycles_wait_128
+                jsr cycles_wait_128
+                jsr cycles_wait_128
+                jsr cycles_wait_128
+                jsr cycles_wait_128
+
+                ; raster 2
+                .set_crtc 11,0
+                .nops 112
+
+;-------------------------------------------------------------------------
+
+                jsr cycles_wait_1024
+                jsr cycles_wait_1024
+                jsr cycles_wait_1024
+                jsr cycles_wait_1024
+                jsr cycles_wait_1024
+                
+                rts
+                .pend
+                
+;-------------------------------------------------------------------------
+
+                .send code
+                

@@ -53,6 +53,7 @@ _parts:
 	$(MAKE) $(ACTION) SRC=cursor_oddity BBC=CUODD
 	$(MAKE) $(ACTION) SRC=cursor_r11 BBC=CUR11
 	$(MAKE) $(ACTION) SRC=cursor_reset BBC=CURESET
+	$(MAKE) $(ACTION) SRC=cursor_reset_2 BBC=CURESE2
 
 ##########################################################################
 ##########################################################################
