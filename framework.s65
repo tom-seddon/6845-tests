@@ -526,8 +526,16 @@ dejitter_offsets:
 ;-------------------------------------------------------------------------
 ; 	HELPER FUNCTIONS
 ;-------------------------------------------------------------------------
-
-
+cycles_wait_32768:
+                jsr cycles_wait_16384
+cycles_wait_16384:
+                jsr cycles_wait_8192
+cycles_wait_8192:
+                jsr cycles_wait_4096
+cycles_wait_4096:
+                jsr cycles_wait_2048
+cycles_wait_2048:
+                jsr cycles_wait_1024
 cycles_wait_1024:
                 jsr cycles_wait_512
 cycles_wait_512:
