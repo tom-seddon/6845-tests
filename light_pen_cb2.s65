@@ -1,0 +1,135 @@
+;-------------------------------------------------------------------------
+; This code is free software: you can redistribute it and/or modify it
+; under the terms of the GNU General Public License as published by
+; the Free Software Foundation, either version 3 of the License, or
+; (at your option) any later version.
+
+; This code is distributed in the hope that it will be useful, but
+; WITHOUT ANY WARRANTY; without even the implied warranty of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+; General Public License for more details.
+
+; You should have received a copy of the GNU General Public License
+; along with this code. If not, see <https://www.gnu.org/licenses/>.
+;-------------------------------------------------------------------------
+
+draw_timer_adjustment=0
+
+screen_base=$3000
+screen_row_stride=640
+                
+                .include "framework.s65"
+
+;-------------------------------------------------------------------------
+
+                .section zp
+lightpen_addr:
+                .fill 2
+                
+                .send zp
+
+;-------------------------------------------------------------------------
+
+                .section code
+
+;-------------------------------------------------------------------------
+
+fx_init_1: .proc
+                jsr load_mode2_screen
+
+                rts
+                .pend
+
+;-------------------------------------------------------------------------
+
+fx_init_2: .proc
+                lda #<screen_base
+                sta lightpen_addr+0
+
+                lda >#screen_base
+                sta lightpen_addr+1
+                
+                jsr lightpen_marker
+                
+                rts
+                .pend
+
+;-------------------------------------------------------------------------
+
+fx_update: .proc
+                inc screen_base+31*screen_row_stride
+
+                jsr lightpen_marker
+
+                jsr get_lightpen_addr
+
+                jsr lightpen_marker
+                sta (lightpen_addr),y
+
+                rts
+                .pend
+
+;-------------------------------------------------------------------------
+
+lightpen_marker: .proc
+                .for i=0,i<8,i+=1
+                ldy #i
+                lda (lightpen_addr),y
+                eor #mode2_value(5,5)
+                sta (lightpen_addr),y
+                .next
+                rts
+                .pend
+
+;-------------------------------------------------------------------------
+
+get_lightpen_addr: .proc
+                lda #16
+                sta $fe00
+                lda $fe01
+                sta lightpen_addr+1
+
+                lda #17
+                sta $fe00
+                lda $fe01
+                sta lightpen_addr+0
+
+                asl lightpen_addr+0
+                rol lightpen_addr+1
+
+                asl lightpen_addr+0
+                rol lightpen_addr+1
+                
+                asl lightpen_addr+0
+                rol lightpen_addr+1
+                
+                rts
+                .pend
+
+;-------------------------------------------------------------------------
+
+fx_draw: .proc
+                lda $fe4c
+                and #%00011111
+                ora #%11100000  ;CB2 high
+                sta $fe4c
+
+                nop
+                nop
+                nop
+                nop
+
+                jsr cycles_wait_32768
+                
+                lda $fe4c
+                and #%00011111
+                ora #%11000000  ;CB2 low
+                sta $fe4c
+                
+                rts
+                .pend
+
+;-------------------------------------------------------------------------
+
+                .send code
+                

@@ -54,6 +54,7 @@ _parts:
 	$(MAKE) $(ACTION) SRC=cursor_r11 BBC=CUR11
 	$(MAKE) $(ACTION) SRC=cursor_reset BBC=CURESET
 	$(MAKE) $(ACTION) SRC=cursor_reset_2 BBC=CURESE2
+	$(MAKE) $(ACTION) SRC=light_pen_cb2 BBC=PEN1
 
 ##########################################################################
 ##########################################################################
